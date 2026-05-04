@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { 
   Container, Paper, Title, Text, Button, 
   Stack, Group, Divider, Card, Badge, 
-  Modal, TextInput, Select, ActionIcon, Alert, SimpleGrid
+  Modal, TextInput, Select, ActionIcon, SimpleGrid, Box, ThemeIcon, Center
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
+import { notifications } from '@mantine/notifications';
+import { modals } from '@mantine/modals';
 import { MapPin, Plus, Trash, Edit, Home, BuildingCommunity, Check, AlertCircle } from 'tabler-icons-react';
 import api from '../../services/api';
 
@@ -13,8 +15,6 @@ const AddressPage = () => {
   const [loading, setLoading] = useState(false);
   const [opened, setOpened] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [message, setMessage] = useState(null);
-  const [error, setError] = useState(null);
 
   const form = useForm({
     initialValues: {
@@ -38,7 +38,7 @@ const AddressPage = () => {
     setLoading(true);
     try {
       const response = await api.get('/users/address');
-      setAddresses(response.data.data);
+      setAddresses(response.data.data || []);
     } catch (err) {
       console.error('Failed to load addresses', err);
     } finally {
@@ -67,87 +67,97 @@ const AddressPage = () => {
     try {
       if (editingId) {
         await api.put(`/users/address/${editingId}`, values);
-        setMessage('Address updated successfully');
+        notifications.show({ title: 'Success', message: 'Address updated successfully', color: 'green' });
       } else {
         await api.post('/users/address', values);
-        setMessage('Address added successfully');
+        notifications.show({ title: 'Success', message: 'Address added successfully', color: 'green' });
       }
       setOpened(false);
       loadAddresses();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to save address');
+      notifications.show({ title: 'Error', message: err.response?.data?.message || 'Failed to save address', color: 'red' });
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this address?')) return;
-    try {
-      await api.delete(`/users/address/${id}`);
-      setMessage('Address deleted successfully');
-      loadAddresses();
-    } catch (err) {
-      setError('Failed to delete address');
-    }
+    modals.openConfirmModal({
+      title: 'Delete Address',
+      children: (
+        <Text size="sm">Are you sure you want to delete this address? This action cannot be undone.</Text>
+      ),
+      labels: { confirm: 'Delete', cancel: 'Cancel' },
+      confirmProps: { color: 'red' },
+      onConfirm: async () => {
+        try {
+          await api.delete(`/users/address/${id}`);
+          notifications.show({ title: 'Success', message: 'Address deleted successfully', color: 'blue' });
+          loadAddresses();
+        } catch (err) {
+          notifications.show({ title: 'Error', message: 'Failed to delete address', color: 'red' });
+        }
+      },
+    });
   };
 
   return (
     <Container size="md" py="xl">
       <Stack gap="xl">
-        <Group justify="space-between">
-          <div>
-            <Title order={2}>Manage Addresses</Title>
-            <Text c="dimmed">Your delivery addresses for easy checkout</Text>
-          </div>
-          <Button color="orange" onClick={() => handleOpenModal()}>
+        <Group justify="space-between" align="flex-end">
+          <Box>
+            <Title order={2} fw={900}>Manage Addresses</Title>
+            <Text c="dimmed" size="sm">Your delivery addresses for easy checkout</Text>
+          </Box>
+          <Button bg="premium-orange" leftSection={<Plus size={18} />} onClick={() => handleOpenModal()}>
             Add New Address
           </Button>
         </Group>
 
-        {message && (
-          <Alert icon={<Check size={16} />} title="Success" color="green" withCloseButton onClose={() => setMessage(null)}>
-            {message}
-          </Alert>
-        )}
-        {error && (
-          <Alert icon={<AlertCircle size={16} />} title="Error" color="red" withCloseButton onClose={() => setError(null)}>
-            {error}
-          </Alert>
-        )}
-
         <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
           {addresses.map((address) => (
-            <Card key={address.id} withBorder padding="lg" radius="md">
-              <Group justify="space-between" mb="xs">
+            <Card key={address.id} withBorder padding="xl" radius="lg" shadow="sm">
+              <Group justify="space-between" mb="lg">
                 <Badge 
+                  variant="light"
                   color={address.type === 'HOME' ? 'blue' : 'teal'} 
+                  radius="sm"
                   leftSection={address.type === 'HOME' ? <Home size={14} /> : <BuildingCommunity size={14} />}
                 >
                   {address.type}
                 </Badge>
                 <Group gap="xs">
-                  <ActionIcon variant="light" color="blue" onClick={() => handleOpenModal(address)}>
-                    <Edit size={16} />
+                  <ActionIcon variant="subtle" color="blue" size="lg" onClick={() => handleOpenModal(address)}>
+                    <Edit size={18} />
                   </ActionIcon>
-                  <ActionIcon variant="light" color="red" onClick={() => handleDelete(address.id)}>
-                    <Trash size={16} />
+                  <ActionIcon variant="subtle" color="red" size="lg" onClick={() => handleDelete(address.id)}>
+                    <Trash size={18} />
                   </ActionIcon>
                 </Group>
               </Group>
-              <Text fw={700} size="lg">{address.city}</Text>
-              <Text size="sm" c="dimmed" mb="md">{address.addressLine}</Text>
-              <Text size="xs" fw={700}>PIN: {address.pincode}</Text>
+              <Box mb="md">
+                <Text fw={900} size="xl">{address.city}</Text>
+                <Text size="sm" c="dimmed" fw={500}>{address.addressLine}</Text>
+              </Box>
+              <Divider my="sm" variant="dashed" />
+              <Group justify="space-between">
+                <Text size="xs" fw={800} c="dimmed">PINCODE</Text>
+                <Text size="sm" fw={800}>{address.pincode}</Text>
+              </Group>
             </Card>
           ))}
         </SimpleGrid>
 
         {addresses.length === 0 && !loading && (
-          <Paper withBorder p="xl" radius="md" style={{ textAlign: 'center' }}>
-            <MapPin size={48} color="#dee2e6" style={{ marginBottom: 15 }} />
-            <Text fw={700}>No addresses found</Text>
-            <Text size="sm" c="dimmed" mb="xl">You haven't added any delivery addresses yet.</Text>
-            <Button variant="outline" color="orange" onClick={() => handleOpenModal()}>
+          <Paper withBorder p={80} radius="lg" shadow="sm" style={{ textAlign: 'center' }}>
+            <Center mb="md">
+              <ThemeIcon size={80} radius={100} color="gray.1" variant="light">
+                <MapPin size={40} color="#adb5bd" />
+              </ThemeIcon>
+            </Center>
+            <Title order={3} mb="xs">No addresses found</Title>
+            <Text c="dimmed" mb="xl">Add your delivery address to start ordering!</Text>
+            <Button variant="outline" color="orange" size="lg" radius="md" onClick={() => handleOpenModal()}>
               Add Your First Address
             </Button>
           </Paper>
@@ -157,20 +167,23 @@ const AddressPage = () => {
       <Modal 
         opened={opened} 
         onClose={() => setOpened(false)} 
-        title={editingId ? "Edit Address" : "Add New Address"}
-        radius="md"
+        title={<Text fw={900} size="lg">{editingId ? "Edit Address" : "Add New Address"}</Text>}
+        radius="lg"
+        padding="xl"
       >
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <Stack gap="md">
             <Select
               label="Address Type"
               data={['HOME', 'OFFICE']}
+              radius="md"
               {...form.getInputProps('type')}
             />
             <TextInput
               label="Address Line"
               placeholder="House No, Street, Landmark"
               required
+              radius="md"
               {...form.getInputProps('addressLine')}
             />
             <Group grow>
@@ -178,16 +191,18 @@ const AddressPage = () => {
                 label="City"
                 placeholder="Mumbai"
                 required
+                radius="md"
                 {...form.getInputProps('city')}
               />
               <TextInput
                 label="Pincode"
                 placeholder="400001"
                 required
+                radius="md"
                 {...form.getInputProps('pincode')}
               />
             </Group>
-            <Button type="submit" color="orange" fullWidth mt="md" loading={loading}>
+            <Button type="submit" bg="premium-orange" fullWidth mt="xl" size="lg" radius="md" loading={loading}>
               {editingId ? 'Update Address' : 'Save Address'}
             </Button>
           </Stack>

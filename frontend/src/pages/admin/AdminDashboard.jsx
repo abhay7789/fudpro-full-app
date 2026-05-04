@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Title, Text, SimpleGrid, Group, Table, Badge, Paper, Stack } from '@mantine/core';
+import { Card, Title, Text, SimpleGrid, Group, Table, Badge, Paper, Stack, Center, Loader } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { Users, ShoppingCart, CurrencyRupee, TrendingUp } from 'tabler-icons-react';
 import api from '../../services/api';
 
+import { useMantineColorScheme, Box } from '@mantine/core';
+
 const AdminDashboard = () => {
   const { t } = useTranslation();
+  const { colorScheme } = useMantineColorScheme();
+  const isDark = colorScheme === 'dark';
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -35,14 +39,18 @@ const AdminDashboard = () => {
     { name: 'Sun', traffic: 700 },
   ];
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return (
+    <Center h={400}>
+      <Loader color="orange" size="xl" type="bars" />
+    </Center>
+  );
 
   return (
     <Stack gap="xl">
-      <Title order={2}>{t('admin_dashboard')}</Title>
+      <Title order={2} fw={900}>{t('admin_dashboard')}</Title>
       
       <SimpleGrid cols={{ base: 1, md: 3 }} spacing="lg">
-        <Card withBorder radius="md" padding="xl">
+        <Card withBorder radius="md" padding="xl" shadow="sm">
           <Group justify="space-between">
             <Text size="xs" c="dimmed" fw={700} tt="uppercase">Total Users</Text>
             <Users size={24} color="#FC8019" />
@@ -54,7 +62,7 @@ const AdminDashboard = () => {
           <Text size="xs" c="dimmed" mt={7}>Compared to last month</Text>
         </Card>
 
-        <Card withBorder radius="md" padding="xl">
+        <Card withBorder radius="md" padding="xl" shadow="sm">
           <Group justify="space-between">
             <Text size="xs" c="dimmed" fw={700} tt="uppercase">New Orders</Text>
             <ShoppingCart size={24} color="#FC8019" />
@@ -66,7 +74,7 @@ const AdminDashboard = () => {
           <Text size="xs" c="dimmed" mt={7}>Since yesterday</Text>
         </Card>
 
-        <Card withBorder radius="md" padding="xl">
+        <Card withBorder radius="md" padding="xl" shadow="sm">
           <Group justify="space-between">
             <Text size="xs" c="dimmed" fw={700} tt="uppercase">Revenue</Text>
             <CurrencyRupee size={24} color="#FC8019" />
@@ -79,7 +87,7 @@ const AdminDashboard = () => {
         </Card>
       </SimpleGrid>
 
-      <Paper withBorder radius="md" p="xl">
+      <Paper withBorder radius="md" p="xl" shadow="sm">
         <Title order={4} mb="lg">Traffic Overview</Title>
         <div style={{ height: 300 }}>
           <ResponsiveContainer width="100%" height="100%">
@@ -100,38 +108,42 @@ const AdminDashboard = () => {
         </div>
       </Paper>
 
-      <Paper withBorder radius="md" p="xl">
-        <Title order={4} mb="lg">Recent Activity</Title>
-        <Table verticalSpacing="sm">
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>User</Table.Th>
-              <Table.Th>Action</Table.Th>
-              <Table.Th>Date</Table.Th>
-              <Table.Th>Status</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            <Table.Tr>
-              <Table.Td>Rahul Sharma</Table.Td>
-              <Table.Td>Placed new order #4521</Table.Td>
-              <Table.Td>2 mins ago</Table.Td>
-              <Table.Td><Badge color="green">Completed</Badge></Table.Td>
-            </Table.Tr>
-            <Table.Tr>
-              <Table.Td>Vendor: Spice Hut</Table.Td>
-              <Table.Td>Updated menu items</Table.Td>
-              <Table.Td>15 mins ago</Table.Td>
-              <Table.Td><Badge color="blue">Pending</Badge></Table.Td>
-            </Table.Tr>
-            <Table.Tr>
-              <Table.Td>Amit Verma</Table.Td>
-              <Table.Td>Profile update</Table.Td>
-              <Table.Td>1 hour ago</Table.Td>
-              <Table.Td><Badge color="gray">System</Badge></Table.Td>
-            </Table.Tr>
-          </Table.Tbody>
-        </Table>
+      <Paper withBorder radius="md" p="0" style={{ overflow: 'hidden' }} shadow="sm">
+        <Box p="xl">
+          <Title order={4}>Recent Activity</Title>
+        </Box>
+        <Table.ScrollContainer minWidth={800}>
+          <Table verticalSpacing="sm" highlightOnHover>
+            <Table.Thead bg={isDark ? 'dark.6' : 'gray.0'}>
+              <Table.Tr>
+                <Table.Th>User</Table.Th>
+                <Table.Th>Action</Table.Th>
+                <Table.Th>Date</Table.Th>
+                <Table.Th>Status</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              <Table.Tr>
+                <Table.Td><Text size="sm" fw={600}>Rahul Sharma</Text></Table.Td>
+                <Table.Td><Text size="sm">Placed new order #4521</Text></Table.Td>
+                <Table.Td><Text size="sm" c="dimmed">2 mins ago</Text></Table.Td>
+                <Table.Td><Badge color="green" variant="light">Completed</Badge></Table.Td>
+              </Table.Tr>
+              <Table.Tr>
+                <Table.Td><Text size="sm" fw={600}>Vendor: Spice Hut</Text></Table.Td>
+                <Table.Td><Text size="sm">Updated menu items</Text></Table.Td>
+                <Table.Td><Text size="sm" c="dimmed">15 mins ago</Text></Table.Td>
+                <Table.Td><Badge color="blue" variant="light">Pending</Badge></Table.Td>
+              </Table.Tr>
+              <Table.Tr>
+                <Table.Td><Text size="sm" fw={600}>Amit Verma</Text></Table.Td>
+                <Table.Td><Text size="sm">Profile update</Text></Table.Td>
+                <Table.Td><Text size="sm" c="dimmed">1 hour ago</Text></Table.Td>
+                <Table.Td><Badge color="gray" variant="light">System</Badge></Table.Td>
+              </Table.Tr>
+            </Table.Tbody>
+          </Table>
+        </Table.ScrollContainer>
       </Paper>
     </Stack>
   );

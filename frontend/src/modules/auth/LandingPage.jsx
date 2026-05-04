@@ -1,91 +1,89 @@
-import React, { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Box } from '@mantine/core';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { Box, useMantineColorScheme, Loader, Center } from '@mantine/core';
 import { useScroll, useTransform } from 'framer-motion';
-import useAuthStore from '../../store/useAuthStore';
-import Navbar from '../../components/Navbar';
+import { useNavigate } from 'react-router-dom';
+
 import LoginModal from '../../components/LoginModal';
+import Navbar from '../../components/Navbar';
 import Hero from './landing/Hero';
-import Chapters from './landing/Chapters';
-import CTA from './landing/CTA';
+import useAuthStore from '../../store/useAuthStore';
+import { getDashboardRoute } from '../../utils/routeUtils';
+
+// Lazy load below-the-fold content for instant hero render
+const Chapters = lazy(() => import('./landing/Chapters'));
+const HowItWorks = lazy(() => import('./landing/HowItWorks'));
+const CTA = lazy(() => import('./landing/CTA'));
+const Footer = lazy(() => import('./landing/Footer'));
 
 const LandingPage = () => {
-  const { isAuthenticated } = useAuthStore();
-  const [isLocating, setIsLocating] = useState(false);
-  const [locationCaptured, setLocationCaptured] = useState(false);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [authOpened, setAuthOpened] = useState(false);
+  const [authMode, setAuthMode] = useState('login');
+  const { colorScheme } = useMantineColorScheme();
+  const isDark = colorScheme === 'dark';
   const navigate = useNavigate();
+
   const heroRef = useRef(null);
-  
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"]
-  });
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.3]);
+  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.96]);
 
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.9]);
+  const [locationCaptured, setLocationCaptured] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
 
-  const handleAction = (path) => {
-    if (isAuthenticated) {
-      navigate(path);
-    } else {
-      setIsLoginOpen(true);
+  // Reset scroll on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.title = 'fudPro — Happiness Delivered Fast';
+  }, []);
+
+  const handleLocateMe = () => {
+    if (navigator.geolocation) {
+      setIsLocating(true);
+      navigator.geolocation.getCurrentPosition(
+        () => { setLocationCaptured(true); setIsLocating(false); },
+        () => { setIsLocating(false); }
+      );
     }
   };
 
-  const handleLocateMe = () => {
-    if ("geolocation" in navigator) {
-      setIsLocating(true);
-      navigator.geolocation.getCurrentPosition((position) => {
-        const { latitude, longitude } = position.coords;
-        setIsLocating(false);
-        setLocationCaptured(true);
-        setTimeout(() => {
-          navigate('/browse?lat=' + latitude + '&lng=' + longitude + '&radius=5');
-        }, 1500);
-      }, (error) => {
-        setIsLocating(false);
-        console.error("Error getting location:", error);
-      });
+  const handleAction = (path) => {
+    const { isAuthenticated, user } = useAuthStore.getState();
+    if (isAuthenticated && user?.role) {
+      navigate(getDashboardRoute(user.role));
     } else {
-      alert("Geolocation is not supported by your browser");
+      setAuthMode('register');
+      setAuthOpened(true);
     }
   };
 
   const mealChapters = [
     { 
-      name: 'Breakfast', 
-      emoji: '🍳', 
-      color: 'orange',
-      time: '7:00 AM - 11:30 AM',
-      desc: 'Start your day with freshly brewed coffee, healthy bowls, and classic Indian breakfast favorites.',
-      dishes: 'Omelettes • Poha • Idli • Pancakes'
+      name: 'Breakfast', emoji: '🌅', time: '7 — 11 AM', color: 'yellow',
+      desc: 'Kickstart your mornings with fresh parathas, smoothie bowls, masala dosas, and aromatic filter coffee.',
+      dishes: 'Poha, Masala Dosa, Paratha, Smoothie Bowl'
     },
     { 
-      name: 'Lunch', 
-      emoji: '🍱', 
-      color: 'yellow',
-      time: '12:00 PM - 4:00 PM',
-      desc: 'Wholesome mid-day meals including executive thalis, gourmet salads, and fulfilling protein bowls.',
-      dishes: 'Thalis • Salads • Biryani • Wraps'
+      name: 'Lunch', emoji: '☀️', time: '12 — 3 PM', color: 'orange',
+      desc: 'Wholesome mid-day thalis, protein bowls, and gourmet salads that keep you powered through the day.',
+      dishes: 'Thali, Biryani, Rajma Chawal, Caesar Salad'
     },
     { 
-      name: 'Dinner', 
-      emoji: '🍛', 
-      color: 'blue',
-      time: '7:00 PM - 12:00 AM',
-      desc: 'Perfect end to your day with curated gourmet dinners, cozy comfort food, and late-night treats.',
-      dishes: 'Pasta • Curries • Steaks • Desserts'
+      name: 'Dinner', emoji: '🌙', time: '7 — 11 PM', color: 'indigo',
+      desc: 'End your day with curated gourmet dinners, comfort food classics, and irresistible late-night cravings.',
+      dishes: 'Butter Chicken, Paneer Tikka, Pasta, Dal Makhani'
     },
   ];
 
   return (
-    <Box bg="#fff" style={{ overflowX: 'hidden' }}>
-      <Navbar openLogin={() => setIsLoginOpen(true)} />
-      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
-      
+    <Box style={{ overflowX: 'hidden' }}>
+      <Navbar 
+        isLanding 
+        openLogin={() => { setAuthMode('login'); setAuthOpened(true); }} 
+        openRegister={() => { setAuthMode('register'); setAuthOpened(true); }} 
+      />
+
       <Hero 
-        heroRef={heroRef}
+        heroRef={heroRef} 
         heroOpacity={heroOpacity}
         heroScale={heroScale}
         handleLocateMe={handleLocateMe}
@@ -94,13 +92,18 @@ const LandingPage = () => {
         handleAction={handleAction}
       />
 
-      <Chapters 
-        mealChapters={mealChapters}
-        handleAction={handleAction}
-      />
+      <Suspense fallback={<Center py={80}><Loader color="orange" type="bars" /></Center>}>
+        <Chapters mealChapters={mealChapters} handleAction={handleAction} />
+        <HowItWorks />
+        <CTA handleAction={handleAction} />
+        <Footer />
+      </Suspense>
 
-      <CTA 
-        handleAction={handleAction}
+      <LoginModal
+        opened={authOpened}
+        onClose={() => setAuthOpened(false)}
+        mode={authMode}
+        setMode={setAuthMode}
       />
     </Box>
   );

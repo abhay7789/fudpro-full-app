@@ -1,32 +1,44 @@
 import React from 'react';
-import { Stack, UnstyledButton, Group, Text, ThemeIcon } from '@mantine/core';
+import { Stack, UnstyledButton, Group, Text, ThemeIcon, useMantineTheme, useMantineColorScheme } from '@mantine/core';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-  LayoutDashboard, Users, Box, ShoppingCart, 
-  Settings, ChartBar, BuildingStore, Truck, 
+import {
+  LayoutDashboard, Users, Box, ShoppingCart,
+  Settings, ChartBar, BuildingStore, Truck,
   CreditCard, MapPin, History
 } from 'tabler-icons-react';
 
 const SidebarItem = ({ icon: Icon, label, path, active }) => {
   const navigate = useNavigate();
+  const theme = useMantineTheme();
+  const { colorScheme } = useMantineColorScheme();
+  const isDark = colorScheme === 'dark';
+
   return (
     <UnstyledButton
       onClick={() => navigate(path)}
-      style={(theme) => ({
+      style={{
         display: 'block',
         width: '100%',
-        borderRadius: '8px',
-        backgroundColor: active ? 'rgba(252, 128, 25, 0.1)' : 'transparent',
-        color: active ? '#FC8019' : '#495057',
-        '&:hover': {
-          backgroundColor: '#F1F3F5',
-        },
+        borderRadius: '12px',
+        backgroundColor: active
+          ? 'rgba(9, 6, 4, 0.1)'
+          : 'transparent',
+        color: active
+          ? '#FC8019'
+          : isDark ? theme.colors.dark[0] : theme.colors.gray[7],
         transition: 'all 0.2s ease',
-      })}
+      }}
     >
-      <Group p="12px 16px">
-        <Icon size={20} stroke={2} />
-        <Text size="sm" fw={active ? 700 : 500}>{label}</Text>
+      <Group p="12px 16px" gap="md">
+        <ThemeIcon
+          variant={active ? 'filled' : 'light'}
+          color={active ? 'orange' : 'gray'}
+          radius="md"
+          size="md"
+        >
+          <Icon size={18} stroke={2} />
+        </ThemeIcon>
+        <Text size="sm" fw={active ? 800 : 500}>{label}</Text>
       </Group>
     </UnstyledButton>
   );

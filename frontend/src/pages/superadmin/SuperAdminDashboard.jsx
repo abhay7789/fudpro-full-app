@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Title, Text, SimpleGrid, Group, Table, Badge, Paper, Stack, Button, Box, ActionIcon } from '@mantine/core';
+import { Card, Title, Text, SimpleGrid, Group, Table, Badge, Paper, Stack, Button, Box, ActionIcon, Center, Loader, useMantineColorScheme } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
@@ -15,6 +15,8 @@ const SuperAdminDashboard = () => {
   const { t } = useTranslation();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { colorScheme } = useMantineColorScheme();
+  const isDark = colorScheme === 'dark';
 
   useEffect(() => {
     loadDashboard();
@@ -46,7 +48,11 @@ const SuperAdminDashboard = () => {
     { name: 'Suspended', value: 50, color: '#fa5252' },
   ];
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return (
+    <Center h={400}>
+      <Loader color="orange" size="xl" type="bars" />
+    </Center>
+  );
 
   return (
     <Stack gap="xl">
@@ -145,7 +151,7 @@ const SuperAdminDashboard = () => {
         <Box 
           style={{ 
             height: 300, 
-            backgroundColor: '#e9ecef', 
+            backgroundColor: isDark ? '#25262b' : '#e9ecef', 
             borderRadius: 8,
             display: 'flex',
             alignItems: 'center',

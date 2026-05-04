@@ -1,10 +1,11 @@
 import React from 'react';
-import { AppShell, Burger, Group, Text, Avatar, Menu, UnstyledButton, Box } from '@mantine/core';
+import { AppShell, Burger, Group, Text, Avatar, Menu, UnstyledButton, Box, ActionIcon, useMantineColorScheme, useMantineTheme } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   User, Logout, Settings, LayoutDashboard, 
-  ChevronDown, Bell, Search, History, MapPin 
+  ChevronDown, Bell, Search, History, MapPin,
+  Sun, Moon
 } from 'tabler-icons-react';
 import useAuthStore from '../store/useAuthStore';
 import Sidebar from './Sidebar';
@@ -14,6 +15,9 @@ const DashboardLayout = ({ children }) => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
+  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+  const theme = useMantineTheme();
+  const dark = colorScheme === 'dark';
 
   const handleLogout = () => {
     logout();
@@ -29,11 +33,6 @@ const DashboardLayout = ({ children }) => {
         collapsed: { mobile: !opened },
       }}
       padding="md"
-      styles={{
-        main: {
-          backgroundColor: '#F8F9FA'
-        }
-      }}
     >
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
@@ -41,15 +40,7 @@ const DashboardLayout = ({ children }) => {
             <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
             <UnstyledButton component={Link} to="/">
               <Group gap="xs">
-                <Box 
-                  style={{ 
-                    background: 'linear-gradient(135deg, #FC8019, #f59e0b)',
-                    width: 35, height: 35, borderRadius: 10,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center'
-                  }}
-                >
-                  <Text c="white" fw={900} size="xl">f</Text>
-                </Box>
+                <img src="/logo.jpg" alt="fudPro Logo" style={{ height: 40, width: 'auto' }} />
                 <Text size="xl" fw={900} style={{ letterSpacing: -1 }}>
                   fud<Text span c="orange" inherit>Pro</Text>
                 </Text>
@@ -57,7 +48,17 @@ const DashboardLayout = ({ children }) => {
             </UnstyledButton>
           </Group>
 
-          <Group gap="lg">
+          <Group gap="md">
+            <ActionIcon
+              variant="default"
+              onClick={() => toggleColorScheme()}
+              size="lg"
+              aria-label="Toggle color scheme"
+              radius="md"
+            >
+              {dark ? <Sun size={18} /> : <Moon size={18} />}
+            </ActionIcon>
+
             <Menu shadow="md" width={220} radius="md" transitionProps={{ transition: 'pop-top-right' }}>
               <Menu.Target>
                 <UnstyledButton>
@@ -115,8 +116,10 @@ const DashboardLayout = ({ children }) => {
         <Sidebar currentPath={location.pathname} role={user?.role} />
       </AppShell.Navbar>
 
-      <AppShell.Main>
-        {children}
+      <AppShell.Main bg={dark ? 'dark.8' : 'gray.0'}>
+        <Box p={{ base: 'xs', sm: 'md', lg: 'xl' }} style={{ maxWidth: 1600, margin: '0 auto' }}>
+          {children}
+        </Box>
       </AppShell.Main>
     </AppShell>
   );

@@ -2,15 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { 
   Card, Title, Text, Button, Badge, Group, SimpleGrid, Image, 
   Modal, Table, Divider, Stack, ActionIcon, Radio, Stepper, 
-  Paper, Box, ScrollArea, Center, Loader
+  Paper, Box, ScrollArea, Center, Loader, useMantineTheme, useMantineColorScheme 
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { 
   Plus, Minus, Trash, ShoppingCart, CreditCard, 
-  DeviceMobile, Cash, MapPin, Check, ChevronRight 
+  DeviceMobile, Cash, MapPin, Check, ChevronRight,
+  Star, Clock, Search, AlertCircle
 } from 'tabler-icons-react';
+import { notifications } from '@mantine/notifications';
 import api from '../../services/api';
 
 const UserDashboard = () => {
@@ -26,6 +28,9 @@ const UserDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('UPI');
+  const theme = useMantineTheme();
+  const { colorScheme } = useMantineColorScheme();
+  const isDark = colorScheme === 'dark';
 
   useEffect(() => {
     loadVendors();
@@ -94,8 +99,12 @@ const UserDashboard = () => {
       setCart([]);
       setActiveStep(2); // Success step
     } catch (error) {
-      console.error('Failed to place order', error);
-      alert('Failed to place order');
+      notifications.show({
+        title: 'Order Failed',
+        message: 'Could not place your order. Please try again.',
+        color: 'red',
+        icon: <AlertCircle size={16} />,
+      });
     } finally {
       setPlacingOrder(false);
     }
@@ -116,57 +125,76 @@ const UserDashboard = () => {
   return (
     <Stack gap="xl">
       <Group justify="space-between" align="center">
-        <Title order={2} style={{ letterSpacing: -0.5 }}>{t('user_dashboard')}</Title>
+        <Box>
+          <Title order={2} fw={900} style={{ letterSpacing: -0.5 }}>{t('user_dashboard')}</Title>
+          <Text size="sm" c="dimmed">Discover the best food near you</Text>
+        </Box>
         <Button 
           onClick={openCheckout} 
           variant="filled" 
-          color="orange" 
-          leftSection={<ShoppingCart size={18} />}
-          radius="xl"
+          bg="premium-orange" 
+          leftSection={<ShoppingCart size={20} />}
+          radius="md"
+          size="md"
           disabled={cart.length === 0}
+          shadow="sm"
         >
-          View Cart ({cart.length})
+          Cart ({cart.reduce((a, b) => a + b.quantity, 0)})
         </Button>
       </Group>
 
       <Title order={3} size="h4" c="dimmed">{t('available_vendors')}</Title>
-      <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="lg">
+      <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="xl">
         {vendors.map((vendor) => (
           <Card 
             key={vendor.id} 
-            shadow="xs" 
-            padding="lg" 
-            radius="md" 
+            shadow="sm" 
+            padding="0" 
+            radius="lg" 
             withBorder 
-            style={{ 
-              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-              cursor: 'pointer'
-            }}
+            className="food-card"
             onClick={() => loadVendorMenu(vendor.id)}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-              e.currentTarget.style.boxShadow = '0 10px 20px rgba(0,0,0,0.05)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
           >
             <Card.Section>
-              <Image 
-                src={vendor.coverImage ? (typeof vendor.coverImage === 'string' ? vendor.coverImage : `data:image/jpeg;base64,${btoa(String.fromCharCode.apply(null, vendor.coverImage.data))}`) : (vendor.imageUrl || `https://source.unsplash.com/featured/?restaurant,food&${vendor.id}`)} 
-                height={160} 
-                alt={vendor.restaurantName} 
-              />
+              <Box style={{ position: 'relative' }}>
+                <Image 
+                  src={vendor.coverImage ? (typeof vendor.coverImage === 'string' ? vendor.coverImage : `data:image/jpeg;base64,${btoa(String.fromCharCode.apply(null, vendor.coverImage.data))}`) : (vendor.imageUrl || `https://source.unsplash.com/featured/?restaurant,food&${vendor.id}`)} 
+                  height={180} 
+                  alt={vendor.restaurantName} 
+                />
+                <Badge 
+                  style={{ position: 'absolute', top: 12, right: 12 }} 
+                  color="green" 
+                  variant="filled" 
+                  radius="md"
+                  shadow="sm"
+                >
+                  LIVE
+                </Badge>
+              </Box>
             </Card.Section>
-            <Group justify="space-between" mt="md" mb="xs">
-              <Text fw={700} size="lg">{vendor.restaurantName}</Text>
-              <Badge color="green" variant="light" radius="sm">Live</Badge>
-            </Group>
-            <Text size="sm" c="dimmed" lineClamp={2} mb="md">{vendor.description}</Text>
-            <Button fullWidth variant="light" color="orange" radius="md">
-              View Menu
-            </Button>
+            
+            <Box p="lg">
+              <Group justify="space-between" wrap="nowrap">
+                <Text fw={800} size="lg" lineClamp={1}>{vendor.restaurantName}</Text>
+                <Group gap={4}>
+                  <Star size={16} fill="#FFC107" color="#FFC107" />
+                  <Text fw={700} size="sm">4.2</Text>
+                </Group>
+              </Group>
+              
+              <Text size="xs" c="dimmed" lineClamp={1} mt={4}>{vendor.description || 'Gourmet Indian Cuisine • Street Food • North Indian'}</Text>
+              
+              <Divider my="md" variant="dashed" />
+              
+              <Group justify="space-between">
+                <Group gap={4}>
+                  <Clock size={14} color="gray" />
+                  <Text size="xs" c="dimmed">25-35 mins</Text>
+                </Group>
+                <Text fw={700} size="sm" c="premium-orange">View Menu</Text>
+              </Group>
+            </Box>
           </Card>
         ))}
       </SimpleGrid>
@@ -191,49 +219,56 @@ const UserDashboard = () => {
         radius="lg"
         overlayProps={{ backgroundOpacity: 0.55, blur: 3 }}
       >
-        <ScrollArea h={500} offsetScrollbars>
+        <ScrollArea h={600} offsetScrollbars p="md">
           {Object.entries(menu).map(([category, items]) => (
             <Box key={category} mb="xl">
-              <Divider my="md" label={<Text fw={700} c="orange" size="sm">{category}</Text>} labelPosition="left" />
-              <Stack gap="xs">
+              <Title order={4} mb="md" c="orange">{category}</Title>
+              <Stack gap="md">
                 {items.map((item) => {
                   const cartItem = cart.find(i => i.id === item.id);
                   return (
-                    <Paper key={item.id} p="md" withBorder radius="md" style={{ backgroundColor: cartItem ? '#fffaf5' : 'transparent' }}>
+                    <Paper 
+                      key={item.id} 
+                      p="lg" 
+                      withBorder 
+                      radius="lg" 
+                      style={{ 
+                        backgroundColor: cartItem 
+                          ? (isDark ? 'rgba(252, 128, 25, 0.05)' : '#fffaf5') 
+                          : 'transparent',
+                        borderColor: cartItem ? '#FC8019' : undefined
+                      }}
+                    >
                       <Group justify="space-between" wrap="nowrap">
                         <Box style={{ flex: 1 }}>
-                          <Text fw={600} size="md">{item.name}</Text>
-                          <Text size="xs" c="dimmed" lineClamp={1}>{item.description}</Text>
-                          <Text fw={800} size="sm" mt={4}>₹{item.price}</Text>
+                          <Text fw={700} size="md">{item.name}</Text>
+                          <Text size="xs" c="dimmed" mt={4}>{item.description || 'Freshly prepared with authentic ingredients'}</Text>
+                          <Text fw={900} size="lg" mt={8} c="orange">₹{item.price}</Text>
                         </Box>
                         
                         {cartItem ? (
-                          <Group gap={8} p={4} style={{ backgroundColor: '#fff', borderRadius: 8, border: '1px solid #eee' }}>
+                          <Group gap={8} p={4} style={{ 
+                            backgroundColor: isDark ? theme.colors.dark[8] : '#fff', 
+                            borderRadius: 12, 
+                            border: `1px solid ${isDark ? theme.colors.dark[4] : '#eee'}`,
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                          }}>
                             <ActionIcon 
                               variant="subtle" 
                               color="orange" 
                               onClick={() => updateQuantity(item.id, -1)}
-                              size="sm"
+                              size="md"
                             >
-                              <Minus size={14} />
+                              <Minus size={16} />
                             </ActionIcon>
-                            <Text size="sm" fw={700} w={20} ta="center">{cartItem.quantity}</Text>
+                            <Text size="md" fw={800} w={24} ta="center">{cartItem.quantity}</Text>
                             <ActionIcon 
                               variant="subtle" 
                               color="orange" 
                               onClick={() => updateQuantity(item.id, 1)}
-                              size="sm"
+                              size="md"
                             >
-                              <Plus size={14} />
-                            </ActionIcon>
-                            <Divider orientation="vertical" />
-                            <ActionIcon 
-                              variant="subtle" 
-                              color="gray" 
-                              onClick={() => removeFromCart(item.id)}
-                              size="sm"
-                            >
-                              <Trash size={14} />
+                              <Plus size={16} />
                             </ActionIcon>
                           </Group>
                         ) : (
@@ -241,9 +276,10 @@ const UserDashboard = () => {
                             variant="light" 
                             color="orange" 
                             radius="md" 
-                            size="xs"
+                            size="sm"
                             onClick={() => addToCart(item)}
-                            leftSection={<Plus size={14} />}
+                            leftSection={<Plus size={16} />}
+                            fw={700}
                           >
                             Add
                           </Button>
@@ -257,7 +293,7 @@ const UserDashboard = () => {
           ))}
         </ScrollArea>
         
-        <Box mt="xl" pt="md" style={{ borderTop: '1px solid #eee' }}>
+        <Box mt="xl" pt="md" style={{ borderTop: isDark ? '1px solid #373A40' : '1px solid #eee' }}>
           <Button 
             fullWidth 
             size="lg"
@@ -301,27 +337,40 @@ const UserDashboard = () => {
                   </Table.Tbody>
                 </Table>
               </ScrollArea>
-              <Paper p="md" withBorder radius="md" style={{ backgroundColor: '#f9f9f9' }}>
-                <Stack gap={4}>
+              <Paper 
+                p="xl" 
+                withBorder 
+                radius="lg" 
+                bg={isDark ? 'dark.6' : 'gray.0'}
+                shadow="xs"
+              >
+                <Stack gap="xs">
                   <Group justify="space-between">
-                    <Text size="sm">Subtotal</Text>
-                    <Text size="sm">₹{getCartTotal()}</Text>
+                    <Text size="md" fw={500}>Subtotal</Text>
+                    <Text size="md" fw={700}>₹{getCartTotal()}</Text>
                   </Group>
                   {paymentMethod === 'COD' && (
                     <Group justify="space-between">
-                      <Text size="sm" c="orange">COD Surcharge</Text>
-                      <Text size="sm" c="orange">+ ₹30</Text>
+                      <Text size="md" c="orange" fw={500}>COD Surcharge</Text>
+                      <Text size="md" c="orange" fw={700}>+ ₹30</Text>
                     </Group>
                   )}
-                  <Divider my={4} />
+                  <Divider my="md" />
                   <Group justify="space-between">
-                    <Text fw={700} size="lg">Total Payable</Text>
-                    <Text fw={800} size="xl" c="orange">₹{getCartTotal() + (paymentMethod === 'COD' ? 30 : 0)}</Text>
+                    <Title order={3} fw={900}>Total Payable</Title>
+                    <Title order={2} fw={900} c="orange">₹{getCartTotal() + (paymentMethod === 'COD' ? 30 : 0)}</Title>
                   </Group>
                 </Stack>
               </Paper>
-              <Button fullWidth size="lg" radius="md" color="orange" onClick={() => setActiveStep(1)}>
-                Choose Payment Method
+              <Button 
+                fullWidth 
+                size="lg" 
+                radius="md" 
+                bg="premium-orange" 
+                onClick={() => setActiveStep(1)}
+                mt="md"
+              >
+                Continue to Payment
               </Button>
             </Stack>
           </Stepper.Step>
@@ -386,7 +435,7 @@ const UserDashboard = () => {
           <Stepper.Completed>
             <Center h={400}>
               <Stack align="center" gap="md">
-                <Box style={{ backgroundColor: '#e6fcf5', padding: 20, borderRadius: '50%' }}>
+                <Box style={{ backgroundColor: isDark ? '#0d3321' : '#e6fcf5', padding: 20, borderRadius: '50%' }}>
                   <Check size={50} color="#099268" />
                 </Box>
                 <Title order={2} ta="center">Order Placed Successfully!</Title>

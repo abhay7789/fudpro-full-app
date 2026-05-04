@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Container, Paper, Title, Text, TextInput, Button, 
-  Stack, Group, Divider, Avatar, Box, Alert 
+  Stack, Group, Divider, Avatar, Box, PasswordInput,
+  ThemeIcon, Badge, SimpleGrid
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { User, Lock, Mail, Phone, Check, AlertCircle } from 'tabler-icons-react';
+import { notifications } from '@mantine/notifications';
+import { User, Lock, Mail, Phone, Check, AlertCircle, ShieldCheck } from 'tabler-icons-react';
 import api from '../../services/api';
 import useAuthStore from '../../store/useAuthStore';
 
 const ProfilePage = () => {
   const { user, setAuth } = useAuthStore();
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState(null);
-  const [error, setError] = useState(null);
 
   const profileForm = useForm({
     initialValues: {
@@ -40,14 +40,22 @@ const ProfilePage = () => {
 
   const handleUpdateProfile = async (values) => {
     setLoading(true);
-    setMessage(null);
-    setError(null);
     try {
       const response = await api.put('/users/profile', values);
       setAuth(response.data.data, useAuthStore.getState().token);
-      setMessage('Profile updated successfully');
+      notifications.show({
+        title: 'Success',
+        message: 'Profile updated successfully',
+        color: 'green',
+        icon: <Check size={16} />,
+      });
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update profile');
+      notifications.show({
+        title: 'Error',
+        message: err.response?.data?.message || 'Failed to update profile',
+        color: 'red',
+        icon: <AlertCircle size={16} />,
+      });
     } finally {
       setLoading(false);
     }
@@ -55,17 +63,25 @@ const ProfilePage = () => {
 
   const handleChangePassword = async (values) => {
     setLoading(true);
-    setMessage(null);
-    setError(null);
     try {
       await api.put('/users/profile/password', {
         oldPassword: values.oldPassword,
         newPassword: values.newPassword,
       });
-      setMessage('Password changed successfully');
+      notifications.show({
+        title: 'Success',
+        message: 'Password changed successfully',
+        color: 'green',
+        icon: <Check size={16} />,
+      });
       passwordForm.reset();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to change password');
+      notifications.show({
+        title: 'Error',
+        message: err.response?.data?.message || 'Failed to change password',
+        color: 'red',
+        icon: <AlertCircle size={16} />,
+      });
     } finally {
       setLoading(false);
     }
@@ -74,90 +90,123 @@ const ProfilePage = () => {
   return (
     <Container size="md" py="xl">
       <Stack gap="xl">
-        <Title order={2}>Account Settings</Title>
+        <Box>
+          <Title order={2} fw={900}>Account Settings</Title>
+          <Text c="dimmed" size="sm">Manage your personal information and security preferences</Text>
+        </Box>
 
-        {message && (
-          <Alert icon={<Check size={16} />} title="Success" color="green" withCloseButton onClose={() => setMessage(null)}>
-            {message}
-          </Alert>
-        )}
-        {error && (
-          <Alert icon={<AlertCircle size={16} />} title="Error" color="red" withCloseButton onClose={() => setError(null)}>
-            {error}
-          </Alert>
-        )}
-
-        <Paper withBorder p="xl" radius="md">
-          <Group mb="xl">
-            <Avatar size={80} radius={80} color="orange">
+        <Paper withBorder p="xl" radius="lg" shadow="sm">
+          <Group mb="xl" gap="xl">
+            <Avatar size={100} radius={100} bg="orange.1" color="orange" variant="light">
               {user?.name?.charAt(0).toUpperCase()}
             </Avatar>
-            <div>
-              <Text size="xl" fw={700}>{user?.name}</Text>
-              <Text size="sm" c="dimmed">{user?.role?.replace('_', ' ')}</Text>
-            </div>
+            <Box>
+              <Title order={3} fw={800}>{user?.name}</Title>
+              <Text size="md" c="dimmed" fw={500}>{user?.role?.replace('_', ' ')}</Text>
+              <Badge mt="xs" color="orange" variant="light">Verified Account</Badge>
+            </Box>
           </Group>
 
           <Divider mb="xl" />
 
           <form onSubmit={profileForm.onSubmit(handleUpdateProfile)}>
             <Stack gap="md">
-              <Title order={4}>Profile Information</Title>
-              <Group grow>
+              <Group gap="xs">
+                <ThemeIcon variant="light" color="blue" radius="md">
+                  <User size={18} />
+                </ThemeIcon>
+                <Title order={4}>Profile Information</Title>
+              </Group>
+              
+              <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
                 <TextInput
                   label="Full Name"
                   placeholder="John Doe"
+                  required
                   leftSection={<User size={16} />}
                   {...profileForm.getInputProps('name')}
+                  radius="md"
                 />
                 <TextInput
                   label="Email Address"
                   placeholder="john@example.com"
+                  required
                   leftSection={<Mail size={16} />}
                   {...profileForm.getInputProps('email')}
+                  radius="md"
                 />
-              </Group>
+              </SimpleGrid>
+              
               <TextInput
                 label="Phone Number"
                 placeholder="9876543210"
+                required
                 leftSection={<Phone size={16} />}
                 {...profileForm.getInputProps('phone')}
+                radius="md"
               />
-              <Button type="submit" color="orange" loading={loading} style={{ alignSelf: 'flex-start' }}>
+              
+              <Button 
+                type="submit" 
+                bg="premium-orange"
+                loading={loading} 
+                size="md"
+                radius="md"
+                style={{ alignSelf: 'flex-start' }}
+              >
                 Update Profile
               </Button>
             </Stack>
           </form>
         </Paper>
 
-        <Paper withBorder p="xl" radius="md">
+        <Paper withBorder p="xl" radius="lg" shadow="sm">
           <form onSubmit={passwordForm.onSubmit(handleChangePassword)}>
             <Stack gap="md">
-              <Title order={4}>Change Password</Title>
-              <TextInput
-                type="password"
+              <Group gap="xs">
+                <ThemeIcon variant="light" color="red" radius="md">
+                  <ShieldCheck size={18} />
+                </ThemeIcon>
+                <Title order={4}>Security & Password</Title>
+              </Group>
+              
+              <PasswordInput
                 label="Current Password"
                 placeholder="••••••••"
+                required
                 leftSection={<Lock size={16} />}
                 {...passwordForm.getInputProps('oldPassword')}
+                radius="md"
               />
-              <Group grow>
-                <TextInput
-                  type="password"
+              
+              <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                <PasswordInput
                   label="New Password"
                   placeholder="••••••••"
+                  required
                   leftSection={<Lock size={16} />}
                   {...passwordForm.getInputProps('newPassword')}
+                  radius="md"
                 />
-                <TextInput
-                  type="password"
+                <PasswordInput
                   label="Confirm New Password"
                   placeholder="••••••••"
+                  required
                   leftSection={<Lock size={16} />}
                   {...passwordForm.getInputProps('confirmPassword')}
+                  radius="md"
                 />
-              </Group>
-              <Button type="submit" variant="light" color="orange" loading={loading} style={{ alignSelf: 'flex-start' }}>
+              </SimpleGrid>
+              
+              <Button 
+                type="submit" 
+                variant="light" 
+                color="orange" 
+                loading={loading} 
+                size="md"
+                radius="md"
+                style={{ alignSelf: 'flex-start' }}
+              >
                 Change Password
               </Button>
             </Stack>

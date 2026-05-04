@@ -1,13 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { 
+  Modal, TextInput, PasswordInput, Button, 
+  Text, Stack, Group, UnstyledButton, Alert,
+  Box, Title
+} from '@mantine/core';
+import { Phone, Mail, Lock, User, DeviceMobile as Smartphone, AlertCircle } from 'tabler-icons-react';
 import api from '../services/api';
 import useAuthStore from '../store/useAuthStore';
-import { X, Phone, Mail, Lock, DeviceMobile as Smartphone } from 'tabler-icons-react';
 
-const LoginModal = ({ isOpen, onClose }) => {
+const LoginModal = ({ isOpen, onClose, startWithRegister = false }) => {
   const { t } = useTranslation();
   const { setAuth } = useAuthStore();
   const [isRegister, setIsRegister] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsRegister(startWithRegister);
+    }
+  }, [isOpen, startWithRegister]);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -18,6 +29,7 @@ const LoginModal = ({ isOpen, onClose }) => {
   const [inputType, setInputType] = useState('phone'); // auto-detected
   const [otpSent, setOtpSent] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -28,11 +40,10 @@ const LoginModal = ({ isOpen, onClose }) => {
     }
   }, [identifier]);
 
-  if (!isOpen) return null;
-
   const handleAuth = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     try {
       if (isRegister) {
         const payload = {
@@ -61,137 +72,161 @@ const LoginModal = ({ isOpen, onClose }) => {
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Authentication failed');
+    } finally {
+      setLoading(false);
     }
   };
 
+  const resetState = () => {
+    setIsRegister(false);
+    setOtpSent(false);
+    setError('');
+    setIdentifier('');
+    setName('');
+    setPhone('');
+    setEmail('');
+    setPassword('');
+    setOtp('');
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md p-8 relative shadow-2xl">
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 dark:text-gray-300">
-          <X size={24} />
-        </button>
+    <Modal
+      opened={isOpen}
+      onClose={() => { onClose(); resetState(); }}
+      size="md"
+      radius="lg"
+      padding="xl"
+      centered
+      transitionProps={{ transition: 'pop', duration: 300 }}
+      overlayProps={{
+        backgroundOpacity: 0.55,
+        blur: 3,
+      }}
+      title={null}
+    >
+      <Box p="md">
+        <Title order={2} fw={900} mb={4}>
+          {isRegister ? t('create_account') : t('welcome_back')}
+        </Title>
+        <Text size="sm" c="dimmed" mb="xl">
+          {isRegister ? t('register_subtitle') : t('login_subtitle')}
+        </Text>
 
-        <h2 className="text-3xl font-bold mb-2 dark:text-white">{isRegister ? t('create_account') : t('welcome_back')}</h2>
-        <p className="text-gray-500 mb-8 dark:text-gray-400">{isRegister ? t('register_subtitle') : t('login_subtitle')}</p>
+        {error && (
+          <Alert icon={<AlertCircle size={16} />} title="Error" color="red" variant="light" mb="xl" radius="md">
+            {error}
+          </Alert>
+        )}
 
-        {error && <div className="bg-red-100 text-red-600 p-3 rounded-lg mb-4">{error}</div>}
-
-        <form onSubmit={handleAuth} className="space-y-4">
-          {isRegister ? (
-            <>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                  <Smartphone size={18} />
-                </div>
-                <input
-                  type="text"
-                  placeholder={t('full_name')}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-premium-orange outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+        <form onSubmit={handleAuth}>
+          <Stack gap="md">
+            {isRegister ? (
+              <>
+                <TextInput
+                  label={t('full_name')}
+                  placeholder="John Doe"
+                  required
+                  leftSection={<User size={18} />}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  required
+                  radius="md"
                 />
-              </div>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                  <Phone size={18} />
-                </div>
-                <input
-                  type="text"
-                  placeholder={t('phone_number')}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-premium-orange outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                <TextInput
+                  label={t('phone_number')}
+                  placeholder="9876543210"
+                  required
+                  leftSection={<Phone size={18} />}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  required
+                  radius="md"
                 />
-              </div>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                  <Mail size={18} />
-                </div>
-                <input
-                  type="email"
-                  placeholder={t('email_optional')}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-premium-orange outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                <TextInput
+                  label={t('email_optional')}
+                  placeholder="john@example.com"
+                  leftSection={<Mail size={18} />}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  radius="md"
                 />
-              </div>
-            </>
-          ) : (
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                {inputType === 'email' ? <Mail size={18} /> : <Phone size={18} />}
-              </div>
-              <input
-                type="text"
-                placeholder={t('email_or_phone')}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-premium-orange outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              </>
+            ) : (
+              <TextInput
+                label={t('email_or_phone')}
+                placeholder="Email or phone number"
+                required
+                leftSection={inputType === 'email' ? <Mail size={18} /> : <Phone size={18} />}
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                required
+                radius="md"
               />
-            </div>
-          )}
+            )}
 
-          {(mode === 'PASSWORD' || isRegister) ? (
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                <Lock size={18} />
-              </div>
-              <input
-                type="password"
-                placeholder={t('password')}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-premium-orange outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            {(mode === 'PASSWORD' || isRegister) ? (
+              <PasswordInput
+                label={t('password')}
+                placeholder="Your secure password"
+                required
+                leftSection={<Lock size={18} />}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
+                radius="md"
               />
-            </div>
-          ) : otpSent ? (
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                <Smartphone size={18} />
-              </div>
-              <input
-                type="text"
-                placeholder={t('enter_otp')}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-premium-orange outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            ) : otpSent ? (
+              <TextInput
+                label={t('enter_otp')}
+                placeholder="6-digit OTP"
+                required
+                leftSection={<Smartphone size={18} />}
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                required
+                radius="md"
               />
-            </div>
-          ) : null}
+            ) : null}
 
-          <button type="submit" className="w-full bg-premium-orange text-white py-3 rounded-xl font-bold hover:bg-orange-600 transition-colors">
-            {isRegister ? t('register') : (mode === 'OTP' && !otpSent ? t('send_otp') : t('login'))}
-          </button>
+            <Button 
+              type="submit" 
+              fullWidth 
+              size="lg" 
+              radius="md" 
+              loading={loading}
+              mt="md"
+              bg="premium-orange"
+            >
+              {isRegister ? t('register') : (mode === 'OTP' && !otpSent ? t('send_otp') : t('login'))}
+            </Button>
+          </Stack>
         </form>
 
-        <div className="mt-6 flex flex-col items-center space-y-2">
+        <Stack align="center" mt="xl" gap="sm">
           {!isRegister && (
-            <button 
+            <UnstyledButton 
               onClick={() => { setMode(mode === 'PASSWORD' ? 'OTP' : 'PASSWORD'); setOtpSent(false); }}
-              className="text-sm font-semibold text-premium-orange hover:underline"
             >
-              {mode === 'PASSWORD' ? t('login_with_otp') : t('login_with_password')}
-            </button>
+              <Text size="sm" fw={700} c="premium-orange">
+                {mode === 'PASSWORD' ? t('login_with_otp') : t('login_with_password')}
+              </Text>
+            </UnstyledButton>
           )}
-          <button 
-            onClick={() => { setIsRegister(!isRegister); setError(''); }}
-            className="text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-premium-orange"
-          >
-            {isRegister ? t('already_have_account') : t('dont_have_account')}
-          </button>
+          
+          <Group gap={4}>
+            <Text size="sm" c="dimmed">
+              {isRegister ? t('already_have_account') : t('dont_have_account')}
+            </Text>
+            <UnstyledButton onClick={() => { setIsRegister(!isRegister); setError(''); }}>
+              <Text size="sm" fw={700} c="premium-orange">
+                {isRegister ? t('login') : t('create_account')}
+              </Text>
+            </UnstyledButton>
+          </Group>
+
           {isRegister && (
-            <p className="text-xs text-gray-400 mt-4 text-center px-4">
+            <Text size="xs" c="dimmed" ta="center" mt="md" px="xl">
               {t('vendor_onboarding_note')}
-            </p>
+            </Text>
           )}
-        </div>
-      </div>
-    </div>
+        </Stack>
+      </Box>
+    </Modal>
   );
 };
 

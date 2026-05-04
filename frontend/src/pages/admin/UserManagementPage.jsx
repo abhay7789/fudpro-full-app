@@ -2,18 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { 
   Container, Paper, Title, Text, Button, 
   Stack, Group, Table, Badge, ActionIcon, 
-  Modal, TextInput, Select, Switch, Alert, Avatar, FileInput
+  Modal, TextInput, Select, Avatar, FileInput,
+  Box, PasswordInput, ScrollArea, useMantineColorScheme
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { UserPlus, Edit, Trash, Check, AlertCircle, Search, Power } from 'tabler-icons-react';
+import { notifications } from '@mantine/notifications';
+import { modals } from '@mantine/modals';
+import { UserPlus, Trash, Check, AlertCircle, Search, Power, Mail, Phone, Lock, BuildingStore, User } from 'tabler-icons-react';
 import api from '../../services/api';
 
 const UserManagementPage = () => {
+  const { colorScheme } = useMantineColorScheme();
+  const isDark = colorScheme === 'dark';
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [opened, setOpened] = useState(false);
-  const [message, setMessage] = useState(null);
-  const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
 
   const form = useForm({
@@ -60,12 +63,22 @@ const UserManagementPage = () => {
     setLoading(true);
     try {
       await api.post('/admin/users', values);
-      setMessage('User created successfully');
+      notifications.show({
+        title: 'Success',
+        message: 'User created successfully',
+        color: 'green',
+        icon: <Check size={16} />,
+      });
       setOpened(false);
       form.reset();
       loadUsers();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create user');
+      notifications.show({
+        title: 'Error',
+        message: err.response?.data?.message || 'Failed to create user',
+        color: 'red',
+        icon: <AlertCircle size={16} />,
+      });
     } finally {
       setLoading(false);
     }
@@ -74,37 +87,64 @@ const UserManagementPage = () => {
   const toggleStatus = async (id, currentStatus) => {
     try {
       await api.patch(`/admin/users/${id}/status`, { isActive: !currentStatus });
-      setMessage(`User ${!currentStatus ? 'activated' : 'deactivated'} successfully`);
+      notifications.show({
+        title: 'Status Updated',
+        message: `User ${!currentStatus ? 'activated' : 'deactivated'} successfully`,
+        color: !currentStatus ? 'green' : 'orange',
+      });
       loadUsers();
     } catch (err) {
-      setError('Failed to update user status');
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to update user status',
+        color: 'red',
+      });
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
-    try {
-      await api.delete(`/admin/users/${id}`);
-      setMessage('User deleted successfully');
-      loadUsers();
-    } catch (err) {
-      setError('Failed to delete user');
-    }
+    modals.openConfirmModal({
+      title: 'Confirm deletion',
+      children: (
+        <Text size="sm">
+          Are you sure you want to delete this user? This action cannot be undone and will remove all associated data.
+        </Text>
+      ),
+      labels: { confirm: 'Delete User', cancel: "Cancel" },
+      confirmProps: { color: 'red' },
+      onConfirm: async () => {
+        try {
+          await api.delete(`/admin/users/${id}`);
+          notifications.show({
+            title: 'Deleted',
+            message: 'User deleted successfully',
+            color: 'blue',
+          });
+          loadUsers();
+        } catch (err) {
+          notifications.show({
+            title: 'Error',
+            message: 'Failed to delete user',
+            color: 'red',
+          });
+        }
+      },
+    });
   };
 
   const handleResetPassword = async () => {
     if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters');
+      notifications.show({ title: 'Error', message: 'Password must be at least 6 characters', color: 'red' });
       return;
     }
     try {
       // Reusing update endpoint for password reset
       await api.patch(`/admin/users/${editingUser.id}/status`, { password: newPassword });
-      setMessage('Password reset successfully');
+      notifications.show({ title: 'Success', message: 'Password reset successfully', color: 'green', icon: <Check size={16} /> });
       setResetPasswordOpened(false);
       setNewPassword('');
     } catch (err) {
-      setError('Failed to reset password');
+      notifications.show({ title: 'Error', message: 'Failed to reset password', color: 'red', icon: <AlertCircle size={16} /> });
     }
   };
 
@@ -117,130 +157,179 @@ const UserManagementPage = () => {
   return (
     <Container size="xl" py="xl">
       <Stack gap="xl">
-        <Group justify="space-between">
-          <div>
-            <Title order={2}>User Management</Title>
-            <Text c="dimmed">Manage all system users, vendors, and roles</Text>
-          </div>
+        <Group justify="space-between" align="center">
+          <Box>
+            <Title order={2} fw={900}>User Management</Title>
+            <Text c="dimmed" size="sm">Manage all system users, vendors, and roles</Text>
+          </Box>
           <Button 
-          leftSection={<UserPlus size={18} />} 
-          color="orange" 
-          radius="md" 
-          onClick={() => {
-            form.reset();
-            setOpened(true);
-          }}
-        >
-          Add New User
-        </Button>
+            leftSection={<UserPlus size={18} />} 
+            bg="premium-orange" 
+            radius="md" 
+            size="md"
+            onClick={() => {
+              form.reset();
+              setOpened(true);
+            }}
+          >
+            Add New User
+          </Button>
         </Group>
 
-        {message && (
-          <Alert icon={<Check size={16} />} title="Success" color="green" withCloseButton onClose={() => setMessage(null)} mb="md">
-            {message}
-          </Alert>
-        )}
-        {error && (
-          <Alert icon={<AlertCircle size={16} />} title="Error" color="red" withCloseButton onClose={() => setError(null)} mb="md">
-            {error}
-          </Alert>
-        )}
+        <Paper withBorder p="0" radius="lg" shadow="sm" style={{ overflow: 'hidden' }}>
+          <Box p="md">
+            <TextInput
+              placeholder="Search by name, email, or phone..."
+              leftSection={<Search size={16} />}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              radius="md"
+            />
+          </Box>
 
-        <Paper withBorder p="md" radius="md">
-          <TextInput
-            placeholder="Search by name, email, or phone..."
-            mb="md"
-            leftSection={<Search size={16} />}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-
-          <Table striped highlightOnHover verticalSpacing="sm">
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>User</Table.Th>
-                <Table.Th>Role / Profile</Table.Th>
-                <Table.Th>Contact</Table.Th>
-                <Table.Th>Status</Table.Th>
-                <Table.Th>Actions</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {filteredUsers.map((user) => (
-                <Table.Tr key={user.id}>
-                  <Table.Td>
-                    <Group gap="sm">
-                      <Avatar color="orange" radius="xl" size="sm">
-                        {user.name.charAt(0).toUpperCase()}
-                      </Avatar>
-                      <Text size="sm" fw={500}>{user.name}</Text>
-                    </Group>
-                  </Table.Td>
-                  <Table.Td>
-                    <Stack gap={4}>
-                      <Badge variant="outline" color={user.roleData?.name === 'SUPER_ADMIN' ? 'red' : 'blue'}>
-                        {user.roleData?.name || 'USER'}
-                      </Badge>
-                      {user.vendorProfile && (
-                        <Text size="xs" fw={700} c="orange">
-                          {user.vendorProfile.restaurantName}
-                        </Text>
-                      )}
-                    </Stack>
-                  </Table.Td>
-                  <Table.Td>
-                    <Text size="xs">{user.email || 'N/A'}</Text>
-                    <Text size="xs" c="dimmed">{user.phone}</Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <Badge color={user.isActive ? 'green' : 'gray'} variant="filled">
-                      {user.isActive ? 'Active' : 'Suspended'}
-                    </Badge>
-                  </Table.Td>
-                  <Table.Td>
-                    <Group gap="xs">
-                      <ActionIcon 
-                        variant="light" 
-                        color="blue" 
-                        onClick={() => {
-                          setEditingUser(user);
-                          setResetPasswordOpened(true);
-                        }}
-                        title="Reset Password"
-                      >
-                        <Edit size={16} />
-                      </ActionIcon>
-                      <ActionIcon 
-                        variant="light" 
-                        color={user.isActive ? 'red' : 'green'} 
-                        onClick={() => toggleStatus(user.id, user.isActive)}
-                        title={user.isActive ? 'Suspend User' : 'Activate User'}
-                      >
-                        <Power size={16} />
-                      </ActionIcon>
-                      <ActionIcon variant="light" color="red" onClick={() => handleDelete(user.id)} title="Delete User">
-                        <Trash size={16} />
-                      </ActionIcon>
-                    </Group>
-                  </Table.Td>
+          <Table.ScrollContainer minWidth={1000}>
+            <Table verticalSpacing="md" horizontalSpacing="lg" highlightOnHover>
+              <Table.Thead bg={isDark ? 'dark.6' : 'gray.0'}>
+                <Table.Tr>
+                  <Table.Th>User</Table.Th>
+                  <Table.Th>Role / Profile</Table.Th>
+                  <Table.Th>Contact</Table.Th>
+                  <Table.Th>Status</Table.Th>
+                  <Table.Th style={{ textAlign: 'right' }}>Actions</Table.Th>
                 </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
+              </Table.Thead>
+              <Table.Tbody>
+                {filteredUsers.map((user) => (
+                  <Table.Tr key={user.id}>
+                    <Table.Td>
+                      <Group gap="sm">
+                        <Avatar color="orange" radius="xl" size="md">
+                          {user.name.charAt(0).toUpperCase()}
+                        </Avatar>
+                        <Box>
+                          <Text size="sm" fw={700}>{user.name}</Text>
+                          <Text size="xs" c="dimmed">ID: #{user.id.substring(0, 8)}</Text>
+                        </Box>
+                      </Group>
+                    </Table.Td>
+                    <Table.Td>
+                      <Stack gap={4}>
+                        <Badge 
+                          variant="light" 
+                          color={user.roleData?.name === 'SUPER_ADMIN' ? 'red' : user.roleData?.name === 'ADMIN' ? 'indigo' : user.roleData?.name === 'VENDOR' ? 'orange' : 'gray'}
+                          radius="sm"
+                        >
+                          {user.roleData?.name || 'USER'}
+                        </Badge>
+                        {user.vendorProfile && (
+                          <Group gap={4}>
+                            <BuildingStore size={12} color="#FC8019" />
+                            <Text size="xs" fw={700} c="orange">
+                              {user.vendorProfile.restaurantName}
+                            </Text>
+                          </Group>
+                        )}
+                      </Stack>
+                    </Table.Td>
+                    <Table.Td>
+                      <Group gap="xs" mb={4}>
+                        <Mail size={12} color="gray" />
+                        <Text size="xs" fw={500}>{user.email || 'N/A'}</Text>
+                      </Group>
+                      <Group gap="xs">
+                        <Phone size={12} color="gray" />
+                        <Text size="xs" c="dimmed">{user.phone}</Text>
+                      </Group>
+                    </Table.Td>
+                    <Table.Td>
+                      <Badge color={user.isActive ? 'green' : 'gray'} variant="dot" fw={700}>
+                        {user.isActive ? 'Active' : 'Suspended'}
+                      </Badge>
+                    </Table.Td>
+                    <Table.Td>
+                      <Group gap="xs" justify="flex-end">
+                        <ActionIcon 
+                          variant="light" 
+                          color="blue" 
+                          size="lg"
+                          radius="md"
+                          onClick={() => {
+                            setEditingUser(user);
+                            setResetPasswordOpened(true);
+                          }}
+                          title="Reset Password"
+                        >
+                          <Lock size={18} />
+                        </ActionIcon>
+                        <ActionIcon 
+                          variant="light" 
+                          color={user.isActive ? 'orange' : 'green'} 
+                          size="lg"
+                          radius="md"
+                          onClick={() => toggleStatus(user.id, user.isActive)}
+                          title={user.isActive ? 'Suspend User' : 'Activate User'}
+                        >
+                          <Power size={18} />
+                        </ActionIcon>
+                        <ActionIcon 
+                          variant="light" 
+                          color="red" 
+                          size="lg"
+                          radius="md"
+                          onClick={() => handleDelete(user.id)} 
+                          title="Delete User"
+                        >
+                          <Trash size={18} />
+                        </ActionIcon>
+                      </Group>
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          </Table.ScrollContainer>
         </Paper>
       </Stack>
 
       <Modal opened={opened} onClose={() => setOpened(false)} title="Create New User" radius="md">
         <form onSubmit={form.onSubmit(handleCreateUser)}>
           <Stack gap="md">
-            <TextInput label="Full Name" placeholder="Jane Doe" required {...form.getInputProps('name')} />
-            <TextInput label="Email Address" placeholder="jane@example.com" {...form.getInputProps('email')} />
-            <TextInput label="Phone Number" placeholder="9876543210" required {...form.getInputProps('phone')} />
-            <TextInput label="Password" type="password" placeholder="••••••••" required {...form.getInputProps('password')} />
+            <TextInput 
+              label="Full Name" 
+              placeholder="Jane Doe" 
+              required 
+              leftSection={<User size={16} />}
+              radius="md"
+              {...form.getInputProps('name')} 
+            />
+            <TextInput 
+              label="Email Address" 
+              placeholder="jane@example.com" 
+              leftSection={<Mail size={16} />}
+              radius="md"
+              {...form.getInputProps('email')} 
+            />
+            <TextInput 
+              label="Phone Number" 
+              placeholder="9876543210" 
+              required 
+              leftSection={<Phone size={16} />}
+              radius="md"
+              {...form.getInputProps('phone')} 
+            />
+            <PasswordInput 
+              label="Password" 
+              placeholder="••••••••" 
+              required 
+              leftSection={<Lock size={16} />}
+              radius="md"
+              {...form.getInputProps('password')} 
+            />
             <Select 
               label="Role" 
               data={['USER', 'VENDOR', 'ADMIN', 'SUPER_ADMIN']} 
               required 
+              radius="md"
               {...form.getInputProps('roleName')} 
             />
 

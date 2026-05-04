@@ -1,149 +1,236 @@
-import React from 'react';
-import { Container, Box, Title, Text, Button, Group, Stack, Badge, UnstyledButton } from '@mantine/core';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MapPin } from 'tabler-icons-react';
-import { BackgroundBlobs, DeliveryJourney, WaveDivider } from './Animations';
+import React, { memo, useRef } from 'react';
+import { Container, Box, Title, Text, Button, Group, Stack, Badge, UnstyledButton, useMantineTheme, useMantineColorScheme } from '@mantine/core';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { Search, MapPin, ArrowRight, ChevronDown } from 'tabler-icons-react';
 
-const Hero = ({ heroRef, heroOpacity, heroScale, handleLocateMe, isLocating, locationCaptured, handleAction }) => {
+const Hero = memo(({ heroRef, heroOpacity, heroScale, handleLocateMe, isLocating, locationCaptured, handleAction }) => {
+  const { colorScheme } = useMantineColorScheme();
+  const isDark = colorScheme === 'dark';
+  const theme = useMantineTheme();
+
   return (
-    <Box 
+    <Box
       ref={heroRef}
-      style={{ 
-        background: 'radial-gradient(circle at 50% 50%, #FFF9F5 0%, #FFFFFF 100%)',
-        minHeight: '65vh',
+      className="hero-section"
+      style={{
+        minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
-        paddingTop: 80,
-        paddingBottom: 0,
-        overflow: 'hidden'
+        overflow: 'hidden',
+        background: isDark 
+          ? '#0A0A0B'
+          : '#FEFCFA',
       }}
     >
-      <BackgroundBlobs />
+      {/* Animated gradient mesh background */}
+      <div className="hero-mesh" />
+      <div className="hero-glow" />
+      <div className="hero-grid-pattern" />
       
-      <Container size="xl" style={{ position: 'relative', zIndex: 10, width: '100%' }}>
+      {/* Floating food emojis */}
+      <div className="floating-emoji floating-emoji-1">🍕</div>
+      <div className="floating-emoji floating-emoji-2">🍜</div>
+      <div className="floating-emoji floating-emoji-3">🥗</div>
+      <div className="floating-emoji floating-emoji-4">🍰</div>
+      <div className="floating-emoji floating-emoji-5">🍔</div>
+
+      <Container size="lg" style={{ position: 'relative', zIndex: 10, width: '100%' }}>
         <motion.div style={{ opacity: heroOpacity, scale: heroScale }}>
-          <Stack align="center" gap={30} style={{ textAlign: 'center' }}>
+          <Stack align="center" gap={{ base: 24, md: 36 }} style={{ textAlign: 'center' }} py={{ base: 80, md: 0 }}>
+            
+            {/* Pill badge */}
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             >
               <Badge 
-                variant="outline" 
-                color="orange" 
                 size="xl" 
                 radius="xl" 
                 px="xl"
+                py="sm"
+                variant="outline"
+                color="orange"
                 style={{ 
-                  borderWidth: 2,
-                  background: 'rgba(252, 128, 25, 0.05)',
+                  borderWidth: 1.5,
+                  background: isDark ? 'rgba(252, 128, 25, 0.06)' : 'rgba(252, 128, 25, 0.04)',
                   textTransform: 'none',
-                  fontWeight: 900,
-                  letterSpacing: 1
+                  fontWeight: 700,
+                  fontSize: '0.8rem',
+                  letterSpacing: 0.3,
+                  backdropFilter: 'blur(10px)',
                 }}
               >
-                ✨ Experience the New fudPro
+                🚀 Delivering happiness in 30 minutes
               </Badge>
             </motion.div>
 
-            <Title 
-              order={1} 
-              style={{ 
-                fontSize: 'clamp(3rem, 10vw, 5.5rem)', 
-                lineHeight: 0.95,
-                letterSpacing: '-4px',
-                fontWeight: 900,
-                color: '#1A1A1A'
-              }}
-            >
-              Happiness <br />
-              <Text span inherit c="orange" style={{ position: 'relative' }}>
-                Delivered
-                <motion.div 
-                  initial={{ width: 0 }}
-                  animate={{ width: '100%' }}
-                  transition={{ delay: 1, duration: 0.8 }}
-                  style={{ position: 'absolute', bottom: 10, left: 0, height: 8, background: 'rgba(252, 128, 25, 0.2)', zIndex: -1 }}
-                />
-              </Text> Fast.
-            </Title>
-
+            {/* Main headline */}
             <motion.div
-              initial={{ opacity: 0, y: 40 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
-              style={{ width: '100%', maxWidth: 900, zIndex: 100 }}
+              transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
             >
-              <Box style={{ 
-                background: '#fff',
-                padding: '12px', 
-                borderRadius: '100px', 
-                border: '1px solid rgba(0,0,0,0.08)',
-                boxShadow: '0 30px 60px rgba(0,0,0,0.12)',
+              <Title
+                order={1}
+                style={{
+                  fontSize: 'clamp(2.8rem, 10vw, 6.5rem)',
+                  lineHeight: 0.95,
+                  letterSpacing: '-4px',
+                  fontWeight: 900,
+                  color: isDark ? '#FFFFFF' : '#0A0A0B',
+                }}
+              >
+                Food that
+                <br />
+                <Text
+                  span
+                  inherit
+                  style={{
+                    background: 'linear-gradient(135deg, #FC8019 0%, #FF6B00 30%, #FF9F4D 60%, #FC8019 100%)',
+                    backgroundSize: '200% auto',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    animation: 'gradient-shift 4s ease infinite',
+                  }}
+                >
+                  moves you.
+                </Text>
+              </Title>
+            </motion.div>
+
+            {/* Subline */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <Text 
+                size="xl" 
+                c="dimmed" 
+                fw={500} 
+                maw={520} 
+                mx="auto" 
+                lh={1.7}
+                style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }}
+              >
+                From your favorite local kitchens to your doorstep. 
+                Curated meals, blazing-fast delivery, zero compromises.
+              </Text>
+            </motion.div>
+
+            {/* Search Bar */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.45, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              style={{ width: '100%', maxWidth: 680, zIndex: 100 }}
+            >
+              <Box className="hero-search-bar" style={{
+                background: isDark ? 'rgba(255,255,255,0.06)' : '#fff',
+                padding: 8,
+                borderRadius: '100px',
+                border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)',
+                boxShadow: isDark 
+                  ? '0 24px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)' 
+                  : '0 24px 60px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px'
+                gap: 8,
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+                backdropFilter: 'blur(20px)',
               }}>
-                <Group gap="md" px="xl" style={{ flex: 1 }}>
-                  <Search size={24} color="#FC8019" />
-                  <Text size="lg" fw={600} c="gray.6">What are you craving today?</Text>
+                <Group gap="md" px="lg" className="hero-search-input" style={{ flex: 1, minWidth: 180 }}>
+                  <Search size={20} color="#FC8019" strokeWidth={2.5} />
+                  <Text size="md" fw={500} c={isDark ? 'gray.5' : 'gray.4'}>
+                    What are you craving today?
+                  </Text>
                 </Group>
-                
-                <Group gap="xs">
-                  <UnstyledButton 
+
+                <Group gap={6} className="hero-search-actions">
+                  <UnstyledButton
                     onClick={handleLocateMe}
-                    style={{ 
-                      display: 'flex', alignItems: 'center', gap: 10, 
-                      padding: '0 25px', height: 56, borderRadius: '50px',
-                      background: '#F8F9FA',
-                      color: '#444', transition: 'all 0.3s ease',
-                      fontWeight: 900
+                    className="hero-locate-btn"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      padding: '0 18px', height: 48, borderRadius: '50px',
+                      background: isDark ? 'rgba(255,255,255,0.06)' : '#f5f5f5',
+                      color: isDark ? '#ddd' : '#555',
+                      fontWeight: 700, fontSize: '0.85rem',
+                      border: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid transparent',
+                      transition: 'all 0.3s ease',
                     }}
                   >
-                    <MapPin size={20} />
-                    <Text size="sm">{isLocating ? 'Locating...' : 'Locate Me'}</Text>
+                    <MapPin size={16} />
+                    <Text size="sm" fw={700} visibleFrom="xs">
+                      {isLocating ? 'Locating...' : locationCaptured ? '📍 Found!' : 'Locate'}
+                    </Text>
                   </UnstyledButton>
 
-                  <Button 
-                    size="xl" 
-                    radius="xl" 
-                    color="orange"
-                    onClick={() => handleAction('/browse')}
-                    style={{ height: 56, padding: '0 50px', fontWeight: 900, fontSize: '1.1rem', boxShadow: '0 10px 20px rgba(252, 128, 25, 0.3)' }}
+                  <Button
+                    size="lg"
+                    radius="xl"
+                    onClick={() => handleAction('/user/dashboard')}
+                    className="hero-find-btn"
+                    style={{
+                      height: 48,
+                      padding: '0 32px',
+                      fontWeight: 800,
+                      fontSize: '0.95rem',
+                      background: 'linear-gradient(135deg, #FC8019 0%, #FF6B00 100%)',
+                      boxShadow: '0 8px 24px rgba(252, 128, 25, 0.3)',
+                      border: 'none',
+                      transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                    }}
+                    rightSection={<ArrowRight size={18} />}
                   >
                     Find Food
                   </Button>
                 </Group>
               </Box>
+            </motion.div>
 
-              <AnimatePresence>
-                {locationCaptured && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    style={{ marginTop: 20 }}
-                  >
-                    <Badge size="lg" color="green" variant="light" py="md">
-                      📍 5 KM RADIUS ACTIVATED
-                    </Badge>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+            {/* Stats bar */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.7, duration: 0.5 }}
+            >
+              <Group gap={{ base: 'lg', md: 50 }} mt="md" justify="center" className="hero-stats">
+                {[
+                  { value: '500+', label: 'Restaurants' },
+                  { value: '30min', label: 'Avg Delivery' },
+                  { value: '4.8★', label: 'User Rating' },
+                  { value: '50K+', label: 'Happy Users' },
+                ].map((stat) => (
+                  <Stack key={stat.label} gap={2} align="center">
+                    <Text fw={900} size="lg" style={{ color: isDark ? '#FC8019' : '#FC8019', fontSize: 'clamp(1.1rem, 2vw, 1.4rem)' }}>{stat.value}</Text>
+                    <Text size="xs" fw={600} c={isDark ? 'gray.5' : 'gray.5'} tt="uppercase" style={{ letterSpacing: 1.5, fontSize: '0.65rem' }}>{stat.label}</Text>
+                  </Stack>
+                ))}
+              </Group>
             </motion.div>
           </Stack>
         </motion.div>
       </Container>
 
-      <Box style={{ width: '100%', marginTop: 40, position: 'relative' }}>
-        <DeliveryJourney />
-        <WaveDivider />
-      </Box>
+      {/* Scroll indicator */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.4, y: [0, 8, 0] }}
+        transition={{ delay: 1.2, duration: 2, repeat: Infinity }}
+        style={{ position: 'absolute', bottom: 30, zIndex: 10 }}
+      >
+        <ChevronDown size={28} color={isDark ? '#fff' : '#333'} />
+      </motion.div>
     </Box>
   );
-};
+});
 
+Hero.displayName = 'Hero';
 export default Hero;

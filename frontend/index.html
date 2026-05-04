@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/jpeg" href="/logo.jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#FC8019" />
     <meta name="description" content="fudPro — Happiness Delivered Fast. Order food online with the fastest delivery across Bharat." />
@@ -12,6 +12,15 @@
     <title>fudPro</title>
   </head>
   <body>
+    <script>
+      let colorScheme = localStorage.getItem('mantine-color-scheme-value') || 'light';
+      document.documentElement.setAttribute('data-mantine-color-scheme', colorScheme);
+      if (colorScheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

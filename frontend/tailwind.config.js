@@ -4,18 +4,18 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-  darkMode: 'class',
+  darkMode: ['class', '[data-mantine-color-scheme="dark"]'],
   theme: {
     extend: {
       colors: {
-        'premium-orange': '#FF7D29',
+        'premium-orange': '#FC8019',
         primary: {
-          light: '#FF7D29',
-          DEFAULT: '#FF7D29',
-          dark: '#E66A1F',
+          light: '#FF9E68',
+          DEFAULT: '#FC8019',
+          dark: '#E45100',
         },
         background: {
-          light: '#FFFFFF',
+          light: '#FAFAFA',
           dark: '#121212',
         }
       },
