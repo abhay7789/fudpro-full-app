@@ -1,0 +1,33 @@
+<svg width="2000" height="200" viewBox="0 0 2000 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Road -->
+  <rect y="180" width="2000" height="20" fill="#F3F4F6"/>
+  
+  <!-- City Skyline (Repeating pattern) -->
+  <rect x="50" y="100" width="60" height="80" fill="#E5E7EB"/>
+  <rect x="150" y="60" width="80" height="120" fill="#D1D5DB"/>
+  <rect x="280" y="80" width="70" height="100" fill="#E5E7EB"/>
+  <rect x="400" y="120" width="50" height="60" fill="#D1D5DB"/>
+  
+  <rect x="550" y="100" width="60" height="80" fill="#E5E7EB"/>
+  <rect x="650" y="60" width="80" height="120" fill="#D1D5DB"/>
+  <rect x="780" y="80" width="70" height="100" fill="#E5E7EB"/>
+  <rect x="900" y="120" width="50" height="60" fill="#D1D5DB"/>
+
+  <rect x="1050" y="100" width="60" height="80" fill="#E5E7EB"/>
+  <rect x="1150" y="60" width="80" height="120" fill="#D1D5DB"/>
+  <rect x="1280" y="80" width="70" height="100" fill="#E5E7EB"/>
+  <rect x="1400" y="120" width="50" height="60" fill="#D1D5DB"/>
+  
+  <rect x="1550" y="100" width="60" height="80" fill="#E5E7EB"/>
+  <rect x="1650" y="60" width="80" height="120" fill="#D1D5DB"/>
+  <rect x="1780" y="80" width="70" height="100" fill="#E5E7EB"/>
+  <rect x="1900" y="120" width="50" height="60" fill="#D1D5DB"/>
+
+  <!-- Rider (Stylized) -->
+  <circle cx="1000" cy="160" r="15" fill="#1E40AF"/> <!-- Scooter body -->
+  <rect x="985" y="160" width="30" height="10" fill="#1E40AF"/>
+  <circle cx="990" cy="175" r="5" fill="#374151"/> <!-- Wheel -->
+  <circle cx="1010" cy="175" r="5" fill="#374151"/> <!-- Wheel -->
+  <rect x="1010" y="145" width="15" height="15" rx="4" fill="#FF7D29"/> <!-- Delivery Box -->
+  <circle cx="1000" cy="135" r="8" fill="#00D2FF"/> <!-- Helmet -->
+</svg>

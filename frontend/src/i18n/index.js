@@ -1,0 +1,117 @@
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
+
+const resources = {
+  en: {
+    translation: {
+      discover: 'Discover',
+      login: 'Login',
+      logout: 'Logout',
+      experience_new_fudpro: 'Experience the New fudPro',
+      search_placeholder: 'What are you craving today?',
+      locate_me: 'Locate Me',
+      find_food: 'Find Food',
+      delivering_speed: 'DELIVERING SPEED ACROSS BHARAT',
+      curated_chapters: 'CURATED CHAPTERS',
+      daily_rhythm: 'Your Daily Food Rhythm',
+      daily_rhythm_subtitle: 'Perfectly timed menus for every stage of your day.',
+      breakfast: 'Breakfast',
+      lunch: 'Lunch',
+      dinner: 'Dinner',
+      breakfast_desc: 'Start your day with freshly brewed coffee, healthy bowls, and classic Indian breakfast favorites.',
+      lunch_desc: 'Wholesome mid-day meals including executive thalis, gourmet salads, and fulfilling protein bowls.',
+      dinner_desc: 'Perfect end to your day with curated gourmet dinners, cozy comfort food, and late-night treats.',
+      welcome_back: 'Welcome Back',
+      login_subtitle: 'Enter your details to access your account',
+      email_or_phone: 'Email or Phone Number',
+      password: 'Password',
+      enter_otp: 'Enter 4-digit OTP',
+      send_otp: 'Send OTP',
+      login_with_otp: 'Login with OTP',
+      login_with_password: 'Login with Password',
+      create_account: 'Create Account',
+      register_subtitle: 'Join the fudPro community today',
+      full_name: 'Full Name',
+      register: 'Register',
+      already_have_account: 'Already have an account? Login',
+      dont_have_account: "Don't have an account? Sign Up",
+      phone_number: 'Phone Number',
+      email_optional: 'Email (Optional)',
+      user_dashboard: 'Customer Dashboard',
+      admin_dashboard: 'Admin Dashboard',
+      super_admin_dashboard: 'Super Admin Console',
+      vendor_dashboard: 'Restaurant Dashboard',
+      available_vendors: 'Available Tiffin Houses',
+      add_menu_item: 'Add New Menu Item',
+      save: 'Save Changes',
+      my_orders: 'My Orders',
+      my_addresses: 'My Addresses',
+      profile_settings: 'Profile Settings',
+      active_orders: 'Active Orders',
+      order_history: 'Order History',
+      store_settings: 'Store Settings',
+      menu_management: 'Menu Management',
+      restaurants: 'Restaurants',
+      customers: 'Customers',
+      drivers: 'Drivers',
+      orders: 'Orders',
+      payments: 'Payments',
+      analytics: 'Analytics',
+      settings: 'Settings',
+      reports: 'Reports',
+      vendor_onboarding_note: 'Want to partner with us? Contact our admin team for vendor onboarding.',
+    }
+  },
+  hi: {
+    translation: {
+      discover: 'खोजें',
+      login: 'लॉगिन',
+      logout: 'लॉगआउट',
+      experience_new_fudpro: 'नए fudPro का अनुभव करें',
+      search_placeholder: 'आज आप क्या खाना चाहते हैं?',
+      locate_me: 'मेरी स्थिति',
+      find_food: 'खाना ढूंढें',
+      delivering_speed: 'पूरे भारत में तेज़ डिलीवरी',
+      curated_chapters: 'विशेष अध्याय',
+      daily_rhythm: 'आपकी दैनिक भोजन लय',
+      daily_rhythm_subtitle: 'दिन के हर चरण के लिए पूरी तरह से समयबद्ध मेनू।',
+      breakfast: 'नाश्ता',
+      lunch: 'दोपहर का भोजन',
+      dinner: 'रात का खाना',
+      breakfast_desc: 'ताज़ा कॉफी, स्वस्थ बाउल और क्लासिक भारतीय नाश्ते के साथ अपने दिन की शुरुआत करें।',
+      lunch_desc: 'कार्यकारी थाली, पेटू सलाद और प्रोटीन बाउल सहित पौष्टिक दोपहर का भोजन।',
+      dinner_desc: 'विशेष रूप से तैयार किए गए रात्रिभोज और देर रात के व्यंजनों के साथ अपने दिन का सही अंत करें।',
+      welcome_back: 'वापसी पर स्वागत है',
+      login_subtitle: 'अपने खाते तक पहुँचने के लिए अपना विवरण दर्ज करें',
+      email_or_phone: 'ईमेल या फोन नंबर',
+      password: 'पासवर्ड',
+      enter_otp: '4-अंकीय ओटीपी दर्ज करें',
+      send_otp: 'ओटीपी भेजें',
+      login_with_otp: 'ओटीपी के साथ लॉगिन करें',
+      login_with_password: 'पासवर्ड के साथ लॉगिन करें',
+      create_account: 'खाता बनाएं',
+      register_subtitle: 'आज ही fudPro समुदाय में शामिल हों',
+      full_name: 'पूरा नाम',
+      register: 'रजिस्टर करें',
+      already_have_account: 'पहले से खाता है? लॉगिन करें',
+      dont_have_account: 'खाता नहीं है? साइन अप करें',
+      phone_number: 'फोन नंबर',
+      email_optional: 'ईमेल (वैकल्पिक)',
+      vendor_onboarding_note: 'हमारे साथ जुड़ना चाहते हैं? वेंडर ऑनबोर्डिंग के लिए हमारी एडमिन टीम से संपर्क करें।',
+    }
+  }
+};
+
+i18n
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init({
+    resources,
+    fallbackLng: 'en',
+    interpolation: {
+      escapeValue: false,
+    },
+  });
+
+export default i18n;
