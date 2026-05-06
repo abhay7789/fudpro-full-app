@@ -13,3 +13,6 @@
 
 ## Next Steps
 1. `/execute 1` to begin stabilization.
+
+> [!IMPORTANT]
+> `backend/reset-db.js` is a manual utility for catastrophic resets or initial setup. It is **NOT** part of the regular development workflow and should only be run when explicitly required.

@@ -4,6 +4,9 @@ const Order = require('../order/order.model');
 
 const getAdminDashboard = async (req, res, next) => {
   try {
+    const totalUsers = await User.count({ 
+      include: [{ model: require('../role/role.model'), as: 'roleData', where: { name: 'USER' } }] 
+    });
     const activeVendors = await Vendor.count({ where: { isActive: true } });
     const todayOrders = await Order.count();
     const todayRevenueResult = await Order.sum('totalAmount', { where: { status: 'DELIVERED' } });
@@ -14,6 +17,7 @@ const getAdminDashboard = async (req, res, next) => {
     res.json({
       success: true,
       data: {
+        totalUsers,
         activeVendors,
         todayOrders,
         todayRevenue,

@@ -3,22 +3,24 @@ import { useTranslation } from 'react-i18next';
 import { 
   Modal, TextInput, PasswordInput, Button, 
   Text, Stack, Group, UnstyledButton, Alert,
-  Box, Title
+  Box, Title, useMantineColorScheme
 } from '@mantine/core';
 import { Phone, Mail, Lock, User, DeviceMobile as Smartphone, AlertCircle } from 'tabler-icons-react';
 import api from '../services/api';
 import useAuthStore from '../store/useAuthStore';
+import { notifications } from '@mantine/notifications';
+import { Check } from 'tabler-icons-react';
 
-const LoginModal = ({ isOpen, onClose, startWithRegister = false }) => {
+const LoginModal = ({ opened, onClose, mode: initialMode = 'login' }) => {
   const { t } = useTranslation();
   const { setAuth } = useAuthStore();
-  const [isRegister, setIsRegister] = useState(false);
-
+  const [isRegister, setIsRegister] = useState(initialMode === 'register');
+  const { colorScheme } = useMantineColorScheme();
+  const isDark = colorScheme === 'dark';
+  
   useEffect(() => {
-    if (isOpen) {
-      setIsRegister(startWithRegister);
-    }
-  }, [isOpen, startWithRegister]);
+    setIsRegister(initialMode === 'register');
+  }, [initialMode, opened]);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -43,6 +45,15 @@ const LoginModal = ({ isOpen, onClose, startWithRegister = false }) => {
   const handleAuth = async (e) => {
     e.preventDefault();
     setError('');
+
+    // Validation check for registration
+    if (isRegister) {
+      if (phone.length !== 10) {
+        setError('Phone number must be exactly 10 digits');
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       if (isRegister) {
@@ -54,6 +65,14 @@ const LoginModal = ({ isOpen, onClose, startWithRegister = false }) => {
         };
         const response = await api.post('/auth/register', payload);
         const { user, token } = response.data.data;
+        
+        notifications.show({
+          title: 'Registration Successful',
+          message: `Welcome to FudPro, ${user.name}!`,
+          color: 'green',
+          icon: <Check size={16} />,
+        });
+
         setAuth(user, token);
         onClose();
       } else if (mode === 'OTP' && !otpSent) {
@@ -91,7 +110,7 @@ const LoginModal = ({ isOpen, onClose, startWithRegister = false }) => {
 
   return (
     <Modal
-      opened={isOpen}
+      opened={opened}
       onClose={() => { onClose(); resetState(); }}
       size="md"
       radius="lg"
@@ -137,7 +156,11 @@ const LoginModal = ({ isOpen, onClose, startWithRegister = false }) => {
                   required
                   leftSection={<Phone size={18} />}
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    setPhone(val);
+                  }}
+                  error={phone && phone.length !== 10 ? 'Must be 10 digits' : null}
                   radius="md"
                 />
                 <TextInput
@@ -190,7 +213,7 @@ const LoginModal = ({ isOpen, onClose, startWithRegister = false }) => {
               radius="md" 
               loading={loading}
               mt="md"
-              bg="premium-orange"
+              color="orange"
             >
               {isRegister ? t('register') : (mode === 'OTP' && !otpSent ? t('send_otp') : t('login'))}
             </Button>

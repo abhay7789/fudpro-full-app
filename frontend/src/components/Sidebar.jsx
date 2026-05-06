@@ -2,7 +2,7 @@ import React from 'react';
 import { Stack, UnstyledButton, Group, Text, ThemeIcon, useMantineTheme, useMantineColorScheme } from '@mantine/core';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, Users, Box, ShoppingCart,
+  Home, Users, Box, ShoppingCart,
   Settings, ChartBar, BuildingStore, Truck,
   CreditCard, MapPin, History
 } from 'tabler-icons-react';
@@ -49,7 +49,7 @@ const Sidebar = ({ currentPath, role }) => {
     switch (role) {
       case 'SUPER_ADMIN':
         return [
-          { icon: LayoutDashboard, label: 'Dashboard', path: '/superadmin/dashboard' },
+          { icon: Home, label: 'Dashboard', path: '/superadmin/dashboard' },
           { icon: BuildingStore, label: 'Restaurants', path: '/superadmin/restaurants' },
           { icon: Users, label: 'Customers', path: '/superadmin/customers' },
           { icon: Truck, label: 'Drivers', path: '/superadmin/drivers' },
@@ -59,7 +59,7 @@ const Sidebar = ({ currentPath, role }) => {
         ];
       case 'ADMIN':
         return [
-          { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
+          { icon: Home, label: 'Dashboard', path: '/admin/dashboard' },
           { icon: Users, label: 'Users', path: '/admin/users' },
           { icon: Box, label: 'Products/Menu', path: '/admin/menu' },
           { icon: ShoppingCart, label: 'Orders', path: '/admin/orders' },
@@ -68,7 +68,7 @@ const Sidebar = ({ currentPath, role }) => {
         ];
       case 'VENDOR':
         return [
-          { icon: LayoutDashboard, label: 'Dashboard', path: '/vendor/dashboard' },
+          { icon: Home, label: 'Dashboard', path: '/vendor/dashboard' },
           { icon: Box, label: 'Menu Management', path: '/vendor/menu' },
           { icon: ShoppingCart, label: 'Active Orders', path: '/vendor/orders' },
           { icon: History, label: 'Order History', path: '/vendor/history' },

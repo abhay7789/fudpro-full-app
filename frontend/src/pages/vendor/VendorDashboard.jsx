@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Title, Text, Button, Table, Group, Badge, Modal, TextInput, NumberInput, Select, Switch, Stack, SimpleGrid, Box, ActionIcon, Skeleton, useMantineTheme, ThemeIcon, useMantineColorScheme } from '@mantine/core';
+import { Card, Title, Text, Button, Table, Group, Badge, Modal, TextInput, NumberInput, Select, Switch, Stack, SimpleGrid, Box, ActionIcon, Skeleton, useMantineTheme, ThemeIcon, useMantineColorScheme, Image } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { modals } from '@mantine/modals';
 import { Check, Trash, Plus, Clock, ExternalLink, AlertCircle } from 'tabler-icons-react';
 import { useTranslation } from 'react-i18next';
 import api from '../../services/api';
+import VoiceInput from '../../components/VoiceInput';
+import { getSafeImage } from '../../utils/imageUtils';
+import { Photo } from 'tabler-icons-react';
 
 const VendorDashboard = () => {
   const { t } = useTranslation();
@@ -22,7 +25,8 @@ const VendorDashboard = () => {
     description: '',
     price: 0,
     categoryId: '',
-    isAvailable: true
+    isAvailable: true,
+    image: null
   });
 
   useEffect(() => {
@@ -84,7 +88,7 @@ const VendorDashboard = () => {
       await api.post('/vendors/menu', form);
       close();
       loadMenu();
-      setForm({ name: '', description: '', price: 0, categoryId: '', isAvailable: true });
+      setForm({ name: '', description: '', price: 0, categoryId: '', isAvailable: true, image: null });
     } catch (error) {
       console.error('Failed to add menu item', error);
     }
@@ -211,6 +215,7 @@ const VendorDashboard = () => {
           <Table verticalSpacing="md" horizontalSpacing="xl">
             <Table.Thead bg={isDark ? 'dark.6' : 'gray.0'}>
               <Table.Tr>
+                <Table.Th style={{ width: 80 }}>Image</Table.Th>
                 <Table.Th>Name</Table.Th>
                 <Table.Th>Category</Table.Th>
                 <Table.Th>Price</Table.Th>
@@ -222,7 +227,16 @@ const VendorDashboard = () => {
               {menuItems.map((item) => (
                 <Table.Tr key={item.id}>
                   <Table.Td>
+                    <Image 
+                      src={getSafeImage(item.image, 'https://placehold.co/100x100?text=No+Img')} 
+                      w={40} 
+                      h={40} 
+                      radius="md" 
+                    />
+                  </Table.Td>
+                  <Table.Td>
                     <Text fw={600}>{item.name}</Text>
+                    <Text size="xs" c="dimmed" lineClamp={1}>{item.description}</Text>
                   </Table.Td>
                   <Table.Td>
                     <Badge variant="dot" color="blue">{item.category?.name || '-'}</Badge>
@@ -266,42 +280,73 @@ const VendorDashboard = () => {
 
       <Modal opened={opened} onClose={close} title={t('add_menu_item')}>
         <form onSubmit={handleSubmit}>
-          <TextInput
+          <VoiceInput
             label="Item Name"
             value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            onChange={(val) => setForm({ ...form, name: val })}
             required
             mb="sm"
           />
-          <TextInput
+          <VoiceInput
             label="Description"
             value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            onChange={(val) => setForm({ ...form, description: val })}
             mb="sm"
           />
-          <NumberInput
-            label="Price (₹)"
-            value={form.price}
-            onChange={(val) => setForm({ ...form, price: val })}
-            min={0}
-            required
-            mb="sm"
-          />
-          <Select
-            label="Category"
-            value={form.categoryId}
-            onChange={(val) => setForm({ ...form, categoryId: val })}
-            data={categories}
-            required
-            mb="sm"
-          />
+          <Group grow mb="sm">
+            <NumberInput
+              label="Price (₹)"
+              value={form.price}
+              onChange={(val) => setForm({ ...form, price: val })}
+              min={0}
+              required
+            />
+            <Select
+              label="Category"
+              value={form.categoryId}
+              onChange={(val) => setForm({ ...form, categoryId: val })}
+              data={categories}
+              required
+            />
+          </Group>
+          
+          <Box mb="md">
+            <Text size="sm" fw={500} mb={4}>Item Image</Text>
+            <Group>
+              <Button 
+                variant="light" 
+                color="orange" 
+                leftSection={<Photo size={16} />}
+                onClick={() => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = 'image/*';
+                  input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => setForm({ ...form, image: reader.result });
+                      reader.readAsDataURL(file);
+                    }
+                  };
+                  input.click();
+                }}
+              >
+                Upload Image
+              </Button>
+              {form.image && (
+                <Image src={form.image} w={50} h={50} radius="md" />
+              )}
+            </Group>
+          </Box>
+
           <Switch
             label="Available"
             checked={form.isAvailable}
             onChange={(e) => setForm({ ...form, isAvailable: e.target.checked })}
             mb="md"
           />
-          <Button type="submit" fullWidth>{t('save')}</Button>
+          <Button type="submit" fullWidth bg="premium-orange" size="md" radius="md">Save Item</Button>
         </form>
       </Modal>
     </Stack>

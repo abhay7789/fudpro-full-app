@@ -39,8 +39,12 @@ build/Release
 
 # Dependency directories
 node_modules/
+gsd-template/
 jspm_packages/
+tools/
+graphify-out/
 
+.gsd
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
 
@@ -143,3 +147,5 @@ vite.config.ts.timestamp-*
 .vite/
 *.docx
 *.xlsx
+.gsd
+.agent

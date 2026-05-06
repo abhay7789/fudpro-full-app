@@ -6,7 +6,18 @@ const { sequelize } = require('../../config/db');
 
 const getAllUsers = async (req, res, next) => {
   try {
+    const where = {};
+    
+    // RBAC: Non-SUPER_ADMIN cannot see SUPER_ADMIN users
+    if (req.user.role !== 'SUPER_ADMIN') {
+      const superAdminRole = await Role.findOne({ where: { name: 'SUPER_ADMIN' } });
+      if (superAdminRole) {
+        where.roleId = { [require('sequelize').Op.ne]: superAdminRole.id };
+      }
+    }
+
     const users = await User.findAll({
+      where,
       include: [
         { model: Role, as: 'roleData' },
         { model: Vendor, as: 'vendorProfile' }
@@ -24,6 +35,18 @@ const createUser = async (req, res, next) => {
   try {
     const { name, email, phone, password, roleName, restaurantName, description } = req.body;
     
+    // RBAC: Non-SUPER_ADMIN cannot create SUPER_ADMIN
+    if (roleName === 'SUPER_ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+      await t.rollback();
+      return res.status(403).json({ success: false, message: 'Only SUPER_ADMIN can create other SUPER_ADMIN users' });
+    }
+
+    // Validation: Phone number MUST be 10 digits
+    if (!/^\d{10}$/.test(phone)) {
+      await t.rollback();
+      return res.status(400).json({ success: false, message: 'Phone number must be exactly 10 digits' });
+    }
+
     const role = await Role.findOne({ where: { name: roleName }, transaction: t });
     if (!role) {
       await t.rollback();
@@ -76,9 +99,16 @@ const updateUserStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { isActive, password } = req.body;
-    const user = await User.findByPk(id);
+    const user = await User.findByPk(id, {
+      include: [{ model: Role, as: 'roleData' }]
+    });
 
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    // RBAC: Non-SUPER_ADMIN cannot edit SUPER_ADMIN
+    if (user.roleData?.name === 'SUPER_ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+      return res.status(403).json({ success: false, message: 'You do not have permission to edit a SUPER_ADMIN' });
+    }
 
     if (isActive !== undefined) user.isActive = isActive;
     if (password) user.password = await bcrypt.hash(password, 10);
@@ -94,9 +124,16 @@ const updateUserStatus = async (req, res, next) => {
 const deleteUser = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const user = await User.findByPk(id);
+    const user = await User.findByPk(id, {
+      include: [{ model: Role, as: 'roleData' }]
+    });
 
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    // RBAC: Non-SUPER_ADMIN cannot delete SUPER_ADMIN
+    if (user.roleData?.name === 'SUPER_ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+      return res.status(403).json({ success: false, message: 'You do not have permission to delete a SUPER_ADMIN' });
+    }
 
     await user.destroy();
     res.json({ success: true, message: 'User deleted successfully' });

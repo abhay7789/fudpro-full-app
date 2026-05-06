@@ -10,8 +10,10 @@ import { notifications } from '@mantine/notifications';
 import { modals } from '@mantine/modals';
 import { UserPlus, Trash, Check, AlertCircle, Search, Power, Mail, Phone, Lock, BuildingStore, User } from 'tabler-icons-react';
 import api from '../../services/api';
+import useAuthStore from '../../store/useAuthStore';
 
 const UserManagementPage = () => {
+  const { user: currentUser } = useAuthStore();
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === 'dark';
   const [users, setUsers] = useState([]);
@@ -51,7 +53,12 @@ const UserManagementPage = () => {
     setLoading(true);
     try {
       const response = await api.get('/admin/users');
-      setUsers(response.data.data);
+      let data = response.data.data;
+      // RBAC: Hide SUPER_ADMIN from regular ADMINs
+      if (currentUser?.role !== 'SUPER_ADMIN') {
+        data = data.filter(u => u.roleData?.name !== 'SUPER_ADMIN');
+      }
+      setUsers(data);
     } catch (err) {
       console.error('Failed to load users', err);
     } finally {
@@ -164,7 +171,7 @@ const UserManagementPage = () => {
           </Box>
           <Button 
             leftSection={<UserPlus size={18} />} 
-            bg="premium-orange" 
+            color="orange" 
             radius="md" 
             size="md"
             onClick={() => {
@@ -316,6 +323,10 @@ const UserManagementPage = () => {
               leftSection={<Phone size={16} />}
               radius="md"
               {...form.getInputProps('phone')} 
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                form.setFieldValue('phone', val);
+              }}
             />
             <PasswordInput 
               label="Password" 
@@ -327,7 +338,7 @@ const UserManagementPage = () => {
             />
             <Select 
               label="Role" 
-              data={['USER', 'VENDOR', 'ADMIN', 'SUPER_ADMIN']} 
+              data={currentUser?.role === 'SUPER_ADMIN' ? ['USER', 'VENDOR', 'ADMIN', 'SUPER_ADMIN'] : ['USER', 'VENDOR', 'ADMIN']} 
               required 
               radius="md"
               {...form.getInputProps('roleName')} 

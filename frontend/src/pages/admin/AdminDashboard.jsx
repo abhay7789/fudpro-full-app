@@ -2,10 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Card, Title, Text, SimpleGrid, Group, Table, Badge, Paper, Stack, Center, Loader } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
-import { Users, ShoppingCart, CurrencyRupee, TrendingUp } from 'tabler-icons-react';
+import { Refresh, Users, ShoppingCart, CurrencyRupee, TrendingUp } from 'tabler-icons-react';
 import api from '../../services/api';
-
-import { useMantineColorScheme, Box } from '@mantine/core';
+import { useMantineColorScheme, Box, Button, ActionIcon } from '@mantine/core';
 
 const AdminDashboard = () => {
   const { t } = useTranslation();
@@ -47,7 +46,24 @@ const AdminDashboard = () => {
 
   return (
     <Stack gap="xl">
-      <Title order={2} fw={900}>{t('admin_dashboard')}</Title>
+      <Group justify="space-between">
+        <Box>
+          <Title order={2} fw={900}>{t('admin_dashboard')}</Title>
+          <Text c="dimmed" size="sm">Manage your restaurant network and monitor performance</Text>
+        </Box>
+        <Group>
+          <Badge color="orange" variant="light" size="lg" leftSection={<TrendingUp size={14} />}>Live Stats</Badge>
+          <ActionIcon 
+            size="lg" 
+            variant="light" 
+            color="orange" 
+            onClick={loadDashboard}
+            loading={loading}
+          >
+            <Refresh size={18} />
+          </ActionIcon>
+        </Group>
+      </Group>
       
       <SimpleGrid cols={{ base: 1, md: 3 }} spacing="lg">
         <Card withBorder radius="md" padding="xl" shadow="sm">

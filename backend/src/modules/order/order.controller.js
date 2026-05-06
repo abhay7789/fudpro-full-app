@@ -100,8 +100,17 @@ const getOrders = async (req, res, next) => {
     const orders = await Order.findAndCountAll({
       where: whereClause,
       include: [
-        { model: OrderItem, as: 'items' },
-        { model: OrderHistory, as: 'history' }
+        { 
+          model: OrderItem, 
+          as: 'items',
+          include: [{ model: MenuItem, as: 'menuItem' }]
+        },
+        { model: OrderHistory, as: 'history' },
+        { 
+          model: require('../user/user.model'), 
+          as: 'user', 
+          attributes: ['name', 'email', 'mobileNumber'] 
+        }
       ],
       distinct: true,
       limit,

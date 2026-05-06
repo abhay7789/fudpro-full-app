@@ -5,7 +5,7 @@ import {
   useMantineColorScheme
 } from '@mantine/core';
 import { 
-  Clock, Check, Package, Bike, Home, AlertCircle, ShoppingBag, ChevronRight 
+  Clock, Check, Package, Bike, Home, AlertCircle, ShoppingBag, ChevronRight, Refresh 
 } from 'tabler-icons-react';
 import api from '../../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -71,6 +71,15 @@ const OrderHistoryPage = () => {
             <Title order={2} fw={900}>My Orders</Title>
             <Text c="dimmed" size="sm">Track and manage your recent orders</Text>
           </Box>
+          <Button 
+            variant="light" 
+            color="orange" 
+            leftSection={<Refresh size={18} />} 
+            onClick={loadOrders}
+            loading={loading}
+          >
+            Refresh
+          </Button>
         </Group>
 
         {orders.length === 0 ? (

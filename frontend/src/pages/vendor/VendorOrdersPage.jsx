@@ -22,7 +22,8 @@ const VendorOrdersPage = () => {
   const loadOrders = async () => {
     try {
       const response = await api.get('/orders');
-      setOrders(response.data.items || []);
+      const activeOrders = (response.data.items || []).filter(o => !['DELIVERED', 'CANCELLED'].includes(o.status));
+      setOrders(activeOrders);
     } catch (error) {
       console.error('Failed to load orders', error);
     } finally {

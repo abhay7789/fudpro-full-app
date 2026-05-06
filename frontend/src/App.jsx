@@ -11,6 +11,7 @@ import './i18n';
 const SuperAdminDashboard = lazy(() => import('./pages/superadmin/SuperAdminDashboard'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const VendorDashboard = lazy(() => import('./pages/vendor/VendorDashboard'));
+const VendorOrderHistoryPage = lazy(() => import('./pages/vendor/VendorOrderHistoryPage'));
 const UserDashboard = lazy(() => import('./pages/user/UserDashboard'));
 const ProfilePage = lazy(() => import('./pages/shared/ProfilePage'));
 const AddressPage = lazy(() => import('./pages/user/AddressPage'));
@@ -132,6 +133,16 @@ function App() {
               <ProtectedRoute>
                 <RoleRoute allowedRoles={['VENDOR']}>
                   <VendorOrdersPage />
+                </RoleRoute>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/vendor/history" 
+            element={
+              <ProtectedRoute>
+                <RoleRoute allowedRoles={['VENDOR']}>
+                  <VendorOrderHistoryPage />
                 </RoleRoute>
               </ProtectedRoute>
             } 

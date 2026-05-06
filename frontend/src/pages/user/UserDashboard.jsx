@@ -14,6 +14,7 @@ import {
 } from 'tabler-icons-react';
 import { notifications } from '@mantine/notifications';
 import api from '../../services/api';
+import { getSafeImage } from '../../utils/imageUtils';
 
 const UserDashboard = () => {
   const { t } = useTranslation();
@@ -25,6 +26,7 @@ const UserDashboard = () => {
   const [checkoutOpened, { open: openCheckout, close: closeCheckout }] = useDisclosure(false);
   const [activeStep, setActiveStep] = useState(0);
   const [cart, setCart] = useState([]);
+  const [addresses, setAddresses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('UPI');
@@ -34,6 +36,7 @@ const UserDashboard = () => {
 
   useEffect(() => {
     loadVendors();
+    loadAddresses();
   }, []);
 
   const loadVendors = async () => {
@@ -44,6 +47,15 @@ const UserDashboard = () => {
       console.error('Failed to load vendors', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadAddresses = async () => {
+    try {
+      const response = await api.get('/users/address');
+      setAddresses(response.data.data || []);
+    } catch (error) {
+      console.error('Failed to load addresses', error);
     }
   };
 
@@ -89,6 +101,17 @@ const UserDashboard = () => {
 
   const placeOrder = async () => {
     setPlacingOrder(true);
+    if (addresses.length === 0) {
+      notifications.show({
+        title: 'Address Required',
+        message: 'Please add a delivery address before placing an order.',
+        color: 'red',
+        icon: <AlertCircle size={16} />,
+      });
+      navigate('/addresses');
+      setPlacingOrder(false);
+      return;
+    }
     try {
       const orderData = {
         vendorId: selectedVendor.id,
@@ -114,6 +137,11 @@ const UserDashboard = () => {
     close();
     setActiveStep(0);
     openCheckout();
+  };
+
+  const getVendorImage = (vendor) => {
+    const fallback = `https://source.unsplash.com/featured/?restaurant,food&${vendor?.id}`;
+    return getSafeImage(vendor?.coverImage || vendor?.imageUrl, fallback);
   };
 
   if (loading) return (
@@ -145,7 +173,7 @@ const UserDashboard = () => {
 
       <Title order={3} size="h4" c="dimmed">{t('available_vendors')}</Title>
       <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="xl">
-        {vendors.map((vendor) => (
+        {vendors && vendors.length > 0 ? vendors.map((vendor) => (
           <Card 
             key={vendor.id} 
             shadow="sm" 
@@ -154,13 +182,15 @@ const UserDashboard = () => {
             withBorder 
             className="food-card"
             onClick={() => loadVendorMenu(vendor.id)}
+            style={{ cursor: 'pointer' }}
           >
             <Card.Section>
               <Box style={{ position: 'relative' }}>
                 <Image 
-                  src={vendor.coverImage ? (typeof vendor.coverImage === 'string' ? vendor.coverImage : `data:image/jpeg;base64,${btoa(String.fromCharCode.apply(null, vendor.coverImage.data))}`) : (vendor.imageUrl || `https://source.unsplash.com/featured/?restaurant,food&${vendor.id}`)} 
+                  src={getVendorImage(vendor)} 
                   height={180} 
                   alt={vendor.restaurantName} 
+                  fallbackSrc="https://placehold.co/600x400?text=No+Image"
                 />
                 <Badge 
                   style={{ position: 'absolute', top: 12, right: 12 }} 
@@ -196,7 +226,7 @@ const UserDashboard = () => {
               </Group>
             </Box>
           </Card>
-        ))}
+        )) : null}
       </SimpleGrid>
 
       {vendors.length === 0 && (
@@ -379,11 +409,20 @@ const UserDashboard = () => {
             <Stack gap="md" mt="xl">
               <Paper p="md" withBorder radius="md">
                 <Group gap="sm" mb="md">
-                  <MapPin size={20} color="gray" />
+                  <MapPin size={20} color={addresses.length > 0 ? "green" : "red"} />
                   <Box>
                     <Text fw={700} size="sm">Delivery Address</Text>
-                    <Text size="xs" c="dimmed">Your default address will be used.</Text>
+                    {addresses.length > 0 ? (
+                      <Text size="xs" c="dimmed">{addresses[0].addressLine}, {addresses[0].city}</Text>
+                    ) : (
+                      <Text size="xs" c="red" fw={600}>No address found. Please add one.</Text>
+                    )}
                   </Box>
+                  {addresses.length === 0 && (
+                    <Button variant="subtle" size="xs" color="orange" onClick={() => navigate('/addresses')}>
+                      Add Address
+                    </Button>
+                  )}
                 </Group>
               </Paper>
 

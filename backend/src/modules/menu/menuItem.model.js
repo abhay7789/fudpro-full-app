@@ -27,6 +27,10 @@ const MenuItem = sequelize.define('MenuItem', {
   isAvailable: {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
+  },
+  image: {
+    type: DataTypes.BLOB,
+    allowNull: true,
   }
 }, {
   tableName: 'menu_items',

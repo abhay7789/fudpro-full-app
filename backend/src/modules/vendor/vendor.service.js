@@ -12,7 +12,7 @@ const getMenu = async (userId) => {
   const vendor = await getVendorProfile(userId);
   return await MenuItem.findAll({
     where: { vendorId: vendor.id },
-    attributes: ['id', 'name', 'description', 'price', 'isAvailable', 'categoryId'],
+    attributes: ['id', 'name', 'description', 'price', 'isAvailable', 'categoryId', 'image'],
     include: [{ 
       model: Category, 
       as: 'category',
@@ -34,7 +34,8 @@ const addMenuItem = async (userId, data) => {
     name: data.name,
     description: data.description,
     price: data.price,
-    isAvailable: data.isAvailable !== undefined ? data.isAvailable : true
+    isAvailable: data.isAvailable !== undefined ? data.isAvailable : true,
+    image: data.image || null
   });
 };
 

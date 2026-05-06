@@ -123,21 +123,20 @@ const Navbar = memo(({ openLogin, openRegister, isLanding = false }) => {
               <>
                 <Button 
                   variant="subtle" 
-                  color={isDark ? 'gray' : 'dark'}
+                  color="orange"
                   radius="xl" 
                   size="sm" 
                   fw={700}
-                  visibleFrom="md"
                   onClick={openLogin}
                 >
                   Login
                 </Button>
                 <Button 
-                  bg="premium-orange"
+                  color="orange"
+                  variant="filled"
                   radius="xl" 
                   size="sm" 
                   fw={700}
-                  visibleFrom="md"
                   onClick={openRegister}
                   style={{ boxShadow: '0 4px 12px rgba(252, 128, 25, 0.2)' }}
                 >
