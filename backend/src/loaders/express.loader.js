@@ -1,5 +1,9 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const hpp = require('hpp');
+const rateLimit = require('express-rate-limit');
+const { xss } = require('express-xss-sanitizer');
 const metricsMiddleware = require('../shared/middleware/metrics.middleware');
 const idempotencyMiddleware = require('../shared/middleware/idempotency.middleware');
 const errorMiddleware = require('../shared/middleware/error.middleware');
@@ -8,6 +12,17 @@ const swaggerSpec = require('../config/swagger');
 
 
 const expressLoader = (app) => {
+  // Security Middlewares
+  app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
+  app.use(xss());
+  app.use(hpp());
+
+  const limiter = rateLimit({
+    windowMs: 10 * 60 * 1000, // 10 minutes
+    max: 1000 // limit each IP to 1000 requests per windowMs
+  });
+  app.use('/api/', limiter);
+
   app.use(cors({
     origin: true,
     credentials: true

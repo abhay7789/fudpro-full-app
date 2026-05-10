@@ -320,3 +320,131 @@ a, button { transition: all 0.2s ease-in-out; }
   .hero-mesh { animation: none; }
   .hero-grid-pattern { display: none; }
 }
+
+/* ===== DELIVERY ANIMATION & PARALLAX ===== */
+.parallax-container {
+  mask-image: linear-gradient(to top, black 50%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, black 50%, transparent 100%);
+}
+
+.parallax-layer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-repeat: repeat-x;
+  background-position: bottom;
+  will-change: transform;
+}
+
+.parallax-layer.cityscape {
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='300'%3E%3Cpath d='M0,300 L0,150 L50,150 L50,100 L100,100 L100,180 L150,180 L150,120 L200,120 L200,200 L280,200 L280,80 L350,80 L350,160 L420,160 L420,90 L500,90 L500,170 L580,170 L580,110 L650,110 L650,190 L720,190 L720,130 L800,130 L800,300 Z' fill='%23e0e0e0' opacity='0.5'/%3E%3C/svg%3E");
+  background-size: 800px auto;
+  animation: parallax-scroll 40s linear infinite;
+  z-index: 1;
+}
+
+.parallax-layer.cityscape.dark {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='300'%3E%3Cpath d='M0,300 L0,150 L50,150 L50,100 L100,100 L100,180 L150,180 L150,120 L200,120 L200,200 L280,200 L280,80 L350,80 L350,160 L420,160 L420,90 L500,90 L500,170 L580,170 L580,110 L650,110 L650,190 L720,190 L720,130 L800,130 L800,300 Z' fill='%231a1a1a' opacity='0.6'/%3E%3C/svg%3E");
+}
+
+.parallax-layer.midground {
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='150'%3E%3Cpath d='M0,150 L0,100 Q30,70 60,100 T120,100 T180,100 T240,100 T300,100 T360,100 T420,100 T480,100 T540,100 T600,100 L600,150 Z' fill='%23cccccc' opacity='0.7'/%3E%3C/svg%3E");
+  background-size: 600px auto;
+  animation: parallax-scroll-mid 20s linear infinite;
+  z-index: 2;
+}
+
+.parallax-layer.midground.dark {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='150'%3E%3Cpath d='M0,150 L0,100 Q30,70 60,100 T120,100 T180,100 T240,100 T300,100 T360,100 T420,100 T480,100 T540,100 T600,100 L600,150 Z' fill='%23222' opacity='0.8'/%3E%3C/svg%3E");
+}
+
+.parallax-layer.road {
+  height: 40px;
+  background: linear-gradient(to bottom, #999, #666);
+  z-index: 3;
+  border-top: 2px solid #bbb;
+}
+.parallax-layer.road::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-image: linear-gradient(90deg, #fff 50%, transparent 50%);
+  background-size: 100px 4px;
+  animation: parallax-scroll 1.5s linear infinite;
+  will-change: transform;
+}
+
+.parallax-layer.road.dark {
+  background: linear-gradient(to bottom, #2a2a2a, #111);
+  border-top: 2px solid #333;
+}
+.parallax-layer.road.dark::after {
+  background-image: linear-gradient(90deg, #555 50%, transparent 50%);
+}
+
+.rider-container-enhanced {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  animation: rider-drift 4s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.rider-bounce {
+  animation: rider-bounce-3d 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+  will-change: transform;
+}
+
+@keyframes parallax-scroll {
+  from { background-position-x: 0; }
+  to { background-position-x: -800px; }
+}
+
+@keyframes parallax-scroll-mid {
+  from { background-position-x: 0; }
+  to { background-position-x: -600px; }
+}
+
+.rider-shadow {
+  animation: shadow-scale 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+}
+
+@keyframes rider-drift {
+  0% { transform: translateX(calc(-50% - 15px)); }
+  100% { transform: translateX(calc(-50% + 15px)); }
+}
+
+@keyframes rider-bounce-3d {
+  0% { transform: translateY(0px) rotate(0deg); }
+  100% { transform: translateY(-12px) rotate(-1deg); }
+}
+
+@keyframes shadow-scale {
+  0% { transform: translateX(-50%) scale(1); opacity: 0.8; }
+  100% { transform: translateX(-50%) scale(0.85); opacity: 0.4; }
+}
+
+.wheel-spin {
+  transform-origin: center;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+.headlight-beam {
+  animation: headlight-flicker 2s infinite alternate;
+}
+@keyframes headlight-flicker {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.12; }
+}
+

@@ -1,8 +1,7 @@
 const dotenv = require('dotenv');
 const path = require('path');
 
-const nodeEnv = process.env.NODE_ENV || 'development';
-const envPath = path.resolve(process.cwd(), `.env.${nodeEnv}`);
+const envPath = path.resolve(process.cwd(), `.env`);
 
 dotenv.config({ path: envPath });
 

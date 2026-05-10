@@ -2,7 +2,7 @@ import React, { memo, useRef } from 'react';
 import { Container, Box, Title, Text, Button, Group, Stack, Badge, UnstyledButton, useMantineTheme, useMantineColorScheme } from '@mantine/core';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Search, MapPin, ArrowRight, ChevronDown } from 'tabler-icons-react';
-
+import DeliveryAnimation from '../../../components/DeliveryAnimation';
 const Hero = memo(({ heroRef, heroOpacity, heroScale, handleLocateMe, isLocating, locationCaptured, handleAction }) => {
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === 'dark';
@@ -29,17 +29,13 @@ const Hero = memo(({ heroRef, heroOpacity, heroScale, handleLocateMe, isLocating
       <div className="hero-mesh" />
       <div className="hero-glow" />
       <div className="hero-grid-pattern" />
-      
-      {/* Floating food emojis */}
-      <div className="floating-emoji floating-emoji-1">🍕</div>
-      <div className="floating-emoji floating-emoji-2">🍜</div>
-      <div className="floating-emoji floating-emoji-3">🥗</div>
-      <div className="floating-emoji floating-emoji-4">🍰</div>
-      <div className="floating-emoji floating-emoji-5">🍔</div>
+
+      {/* Infinite Parallax Delivery Animation */}
+      <DeliveryAnimation />
 
       <Container size="lg" style={{ position: 'relative', zIndex: 10, width: '100%' }}>
         <motion.div style={{ opacity: heroOpacity, scale: heroScale }}>
-          <Stack align="center" gap={{ base: 24, md: 36 }} style={{ textAlign: 'center' }} py={{ base: 80, md: 0 }}>
+          <Stack align="center" gap={{ base: 24, md: 36 }} style={{ textAlign: 'center' }} py={{ base: 80, md: 0 }} mb={{ base: 180, md: 240 }}>
             
             {/* Pill badge */}
             <motion.div
@@ -77,9 +73,9 @@ const Hero = memo(({ heroRef, heroOpacity, heroScale, handleLocateMe, isLocating
               <Title
                 order={1}
                 style={{
-                  fontSize: 'clamp(2.8rem, 10vw, 6.5rem)',
+                  fontSize: 'clamp(2.4rem, 8vw, 5.5rem)',
                   lineHeight: 0.95,
-                  letterSpacing: '-4px',
+                  letterSpacing: '-2.5px',
                   fontWeight: 900,
                   color: isDark ? '#FFFFFF' : '#0A0A0B',
                 }}
@@ -195,26 +191,7 @@ const Hero = memo(({ heroRef, heroOpacity, heroScale, handleLocateMe, isLocating
               </Box>
             </motion.div>
 
-            {/* Stats bar */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7, duration: 0.5 }}
-            >
-              <Group gap={{ base: 'lg', md: 50 }} mt="md" justify="center" className="hero-stats">
-                {[
-                  { value: '500+', label: 'Restaurants' },
-                  { value: '30min', label: 'Avg Delivery' },
-                  { value: '4.8★', label: 'User Rating' },
-                  { value: '50K+', label: 'Happy Users' },
-                ].map((stat) => (
-                  <Stack key={stat.label} gap={2} align="center">
-                    <Text fw={900} size="lg" style={{ color: isDark ? '#FC8019' : '#FC8019', fontSize: 'clamp(1.1rem, 2vw, 1.4rem)' }}>{stat.value}</Text>
-                    <Text size="xs" fw={600} c={isDark ? 'gray.5' : 'gray.5'} tt="uppercase" style={{ letterSpacing: 1.5, fontSize: '0.65rem' }}>{stat.label}</Text>
-                  </Stack>
-                ))}
-              </Group>
-            </motion.div>
+
           </Stack>
         </motion.div>
       </Container>

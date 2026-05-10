@@ -31,7 +31,18 @@ const Navbar = memo(({ openLogin, openRegister, isLanding = false }) => {
   };
 
   const navLinks = isLanding ? [
-    { label: 'Discover', icon: <Compass size={16} />, action: () => { navigate('/'); setMobileOpen(false); } },
+    { 
+      label: 'Discover', 
+      icon: <Compass size={16} />, 
+      action: () => { 
+        if (isAuthenticated && user?.role) {
+          navigate(getDashboardRoute(user.role));
+        } else {
+          openLogin?.();
+        }
+        setMobileOpen(false); 
+      } 
+    },
   ] : [];
 
   return (
