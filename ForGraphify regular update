@@ -1,0 +1,2 @@
+run /graphify . --watch in background such that as soon as new development goes on
+graphify should get updated automatically
